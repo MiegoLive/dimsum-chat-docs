@@ -13,6 +13,9 @@ hero:
     - theme: alt
       text: 开发者手册
       link: /zh/dev/quickstart
+  image:
+    src: /img/dimsum-chat-icon.png
+    alt: DimSum Chat
 
 features:
   - title: 易上手
@@ -26,9 +29,9 @@ features:
 <style>
 :root {
   --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: -webkit-linear-gradient(120deg, #bd34fe 30%, #41d1ff);
+  --vp-home-hero-name-background: -webkit-linear-gradient(120deg, #f6d365 30%, #fda085);
 
-  --vp-home-hero-image-background-image: linear-gradient(-45deg, #bd34fe 50%, #47caff 50%);
+  --vp-home-hero-image-background-image: linear-gradient(-45deg, #f6d365 50%, #fda085 50%);
   --vp-home-hero-image-filter: blur(44px);
 }
 
