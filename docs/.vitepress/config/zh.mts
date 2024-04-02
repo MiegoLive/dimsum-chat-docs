@@ -18,6 +18,11 @@ export const zh = defineConfig({
       '/zh/api/': { base: '/zh/api/', items: sidebarApi() }
     },
 
+    editLink: {
+      pattern: 'https://github.com/MiegoLive/dimsum-chat-docs/edit/main/docs/:path',
+      text: '在 GitHub 上编辑此页面'
+    },
+
     footer: {
       message: `<a href="https://beian.miit.gov.cn/" target="_blank">京ICP备2022030336号-2</a>`,
       copyright: `版权所有 © 2023-${new Date().getFullYear()} Miego Live 糕社`
@@ -42,4 +47,24 @@ function sidebarApi(): DefaultTheme.SidebarItem[] {
       ]
     },
   ]
+}
+
+export const search: DefaultTheme.LocalSearchOptions['locales'] = {
+  zh: {
+    translations: {
+      button: {
+        buttonText: '搜索文档',
+        buttonAriaLabel: '搜索文档'
+      },
+      modal: {
+        noResultsText: '无法找到相关结果',
+        resetButtonTitle: '清除查询条件',
+        footer: {
+          selectText: '选择',
+          navigateText: '切换',
+          closeText: '关闭'
+        }
+      }
+    }
+  }
 }
