@@ -2,6 +2,9 @@
 # https://vitepress.dev/reference/default-theme-home-page
 layout: home
 
+title: DimSum Chat
+titleTemplate: Use & Dev Friendly Stream Beautifier.
+
 hero:
   name: "DimSum Chat"
   text: "Use & Dev Friendly\nStream Beautifier."

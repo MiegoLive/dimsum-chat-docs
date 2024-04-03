@@ -6,7 +6,7 @@ const pkg = require('vitepress/package.json')
 
 export const en = defineConfig({
   lang: 'en',
-  description: 'Stream Beautifier by Miego Live.',
+  description: 'Use & Dev Friendly Stream Beautifier.',
   themeConfig: {
     footer: {
       message: `<a href="https://beian.miit.gov.cn/" target="_blank">京ICP备2022030336号-2</a>`,
