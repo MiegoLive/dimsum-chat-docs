@@ -3,7 +3,7 @@
   <h1 align="center">DimSum Chat Documentation</h1>
 </p>
 
-The repository holds the code and markdown source files for the DimSum Chat documentation website, which is accessible at [miego.live](https://miego.live)
+The repository holds the code and markdown source files for the DimSum Chat documentation website, which is accessible at [dimsum.chat](https://dimsum.chat)
 
 ## Index
 - [Index](#index)
@@ -14,7 +14,7 @@ The repository holds the code and markdown source files for the DimSum Chat docu
 - [Local setup](#local-setup)
   - [Requirements](#requirements)
   - [Starting](#starting)
-- [Thanks 💜](#thanks-)
+- [Thanks 💛](#thanks-)
 
 ## Documentation Issues
 If you come across any issues with the documentation or have a feature request related explicitly to it, we encourage you to create a new [GitHub issue](https://github.com/MiegoLive/dimsum-chat-docs/issues/new). Before creating a new issue, we kindly request that you check for existing issues to avoid duplication. 
@@ -59,6 +59,6 @@ pnpm run docs:build
 pnpm run docs:preview
 ```
 
-## Thanks 💜
+## Thanks 💛
 
 Thanks for all your contributions and efforts towards improving the DimSum Chat documentation. We thank you being part of our ✨ community ✨!
