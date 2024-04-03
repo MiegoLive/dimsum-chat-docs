@@ -59,7 +59,9 @@ http://localhost:13499/danmu-example/index.html
 
   应用的基本路径，用于指定应用的根目录，是区分每一个应用的**唯一标识**。在点心CHAT中访问应用时，会使用该路径拼接页面的路径。
   
-  因此，**不同的应用应具有不同的基本路径名**。并规避以下关键字：`bface` `websocket`
+  ::: warning
+  **不同的应用应具有不同的基本路径名**。并规避以下关键字：`bface` `websocket`
+  :::
 
 
 ### description

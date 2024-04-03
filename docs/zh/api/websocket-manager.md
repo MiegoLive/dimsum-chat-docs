@@ -21,9 +21,11 @@
 
   第一个参数传入一个回调函数，第二个参数配置 `onMessage` 的行为。
 
-  `onMessageOptions.customWsServer` 属性配置自定义 WebSocket 服务器地址。
+  `onMessageOptions.customWsServer` 属性配置自定义 WebSocket 服务器地址。如果你使用前端工具链在自建服务器上测试 html，这会很有帮助。
   
+  ::: info
   该函数的本质是 `WebSocketManager.getInstance()` `WebSocketManager.connect()` `WebSocketManager.addMessageListener()` `getWebSocketURL()` 等 API 的组合，并将消息 json 进行了反序列化。
+  :::
 
 - **示例**
 

@@ -12,6 +12,14 @@
   }
   ```
 
+- **详细信息**
+
+  消息解析器用于把主程序发送的直播间消息解析为便于使用的对象，并且最大程度地兼容了各个直播平台的消息结构。
+
+  ::: tip
+  消息解析器拥有属性值缓存机制，仅会在初次访问该对象的属性时产生少量的计算，因此您可以毫无负担地使用它。
+  :::
+
 - **示例**
 
   ```js
@@ -33,6 +41,12 @@
 
 原始消息内容。
 
+::: warning
+来自 `bilibili` 与 `openblive` 的原始消息为 json 字符串，但存入 `rawContent` 前会被反序列化。
+
+因此，当您需要使用原始消息的内容时，无需再次对其反序列化。
+:::
+
 - **类型** `any` 
 
 ## parser.platform
@@ -51,6 +65,10 @@
   type MessageType = 'comment' | 'gift' | 'follow' | 'joinclub' | 'like' | 
                     'guard' | 'superchat' | 'enter' | 'share' | undefined;
   ```
+
+- **详细信息**
+
+  `guard` 与 `superchat` 类型的消息仅存在于 `bilibili` 与 `openblive` 平台的消息中。
 
 ## parser.userName
 
@@ -96,7 +114,7 @@ Acfun 守护团所属主播的用户 ID。
 
 ## parser.getCommentHTML()
 
-简单地将评论构造为 HTML 字符串。
+简单地将评论构造为 HTML 字符串。这在一般情况下构造评论消息的渲染内容时很有用。
 
 - **类型** 
 
@@ -124,7 +142,7 @@ Acfun 守护团所属主播的用户 ID。
 
   `stickerClass` 贴纸表情的 css 类。
 
-  当消息为贴纸表情类消息时，仅返回一个 img 元素的 html 字符串：
+  当消息为贴纸表情类消息时，仅返回一个 img 元素的 HTML 字符串：
 
   ```html
   <img src="${stickerUrl}" alt="" style="${stickerStyle}" class="${stickerClass}">
@@ -134,7 +152,7 @@ Acfun 守护团所属主播的用户 ID。
 
   `emotClass` 小表情的 css 类。
 
-  当消息不为贴纸表情类消息，且包含小表情时，小表情关键词将替换为 img 元素的 html 字符串：
+  当消息不为贴纸表情类消息，且包含小表情时，小表情关键词将替换为 img 元素的 HTML 字符串：
 
   ```html
   <img src="${emotUrl}" alt="" style="${emotStyle}" class="${emotClass}">
@@ -174,7 +192,7 @@ Acfun 守护团所属主播的用户 ID。
 
   参数是一个构建函数，返回你构建的评论字符串。
 
-  `comment` 是经过 html 安全转义后的弹幕聊天内容。若要使用原始内容，请使用 `parser.comment`。
+  `comment` 是经过 HTML 安全转义后的弹幕聊天内容。若要使用原始内容，请使用 `parser.comment`。
 
   `stickerUrl` 是B站贴纸表情的图片 URL。
 
@@ -184,11 +202,13 @@ Acfun 守护团所属主播的用户 ID。
 
 ```js
 const comment = parser.CommentBuilder((comment, stickerUrl, emots) => {
+  // 如果为贴纸表情，则不需要显示文字内容
   if (stickerUrl !== undefined) {
     return '';
   }
   let content = comment;
   if (emots !== undefined) {
+    // 将小表情关键词替换为图片元素字符串
     emots.forEach(emot => {
       const re = new RegExp(`\\${emot[0]}`, "g");
       content = content.replace(re,
@@ -205,6 +225,10 @@ const comment = parser.CommentBuilder((comment, stickerUrl, emots) => {
 大航海等级 / 大航海购买等级。
 
 - **类型** `0 | 3 | 2 | 1 | undefined`
+
+- **详细信息**
+
+  `0` 为路人，`3` 为舰长，`2` 为提督，`1` 为总督。
 
 ## parser.guardNum
 
@@ -262,7 +286,7 @@ const comment = parser.CommentBuilder((comment, stickerUrl, emots) => {
 
 ## parser.getAbstractLevel()
 
-获取抽象化分级。
+获取用户的抽象化分级。如果你将用户的渲染样式进行了多种等级区分，这会很有帮助。
 
 - **类型**
 
