@@ -1,5 +1,7 @@
 # 快速开始
 
+在本节中，我们将介绍如何在本地创建一个点心应用。
+
 ## 安装开发工具包
 
 ::: tip 前提条件
@@ -33,7 +35,7 @@ $ bun add dimsum-chat
 
 ## 通过 CDN 使用开发工具包
 
-你可以借助 script 标签直接通过 CDN 来使用开发工具包：
+你如果不想使用 Node.js，可以借助 script 标签直接通过 CDN 来使用开发工具包：
 
 ```html
 <script src="https://unpkg.com/dimsum-chat@0/dist/dimsum-chat.umd.cjs"></script>
@@ -123,3 +125,92 @@ import { onMessage } from 'dimsum-chat'
 ::: warning 导入映射表的浏览器支持情况
 导入映射表是一个相对较新的浏览器功能。请确保使用其[支持范围](https://caniuse.com/import-maps)内的浏览器。请注意，只有 Safari 16.4 以上版本支持。
 :::
+
+## 文件结构
+
+假设选择在点心 Chat 主程序的目录中搭建点心应用项目，文件结构应该是这样的：
+
+```
+.
+├─ Steamer
+│  ├─ example-widget
+│  │  ├─ guide.dimsum.json
+│  │  ├─ index.html
+│  │  └─ ...
+│  └─ ...
+└─ DimSum Chat.exe
+```
+
+为了快速开始，你可以先按以下示例完善 `guide.dimsum.json` 文件与 `index.html` 文件：
+
+- **配置文件**
+
+  配置文件 (`guide.dimsum.json`) 让你能够自定义点心应用的基本信息和页面配置。以下是一个基本的配置文件的结构示例：
+
+  ```json
+  {
+    "name": "样例应用",
+    "version": "1.0.0",
+    "base": "/example-widget/",
+    "description": "这是我的第一个应用，它支持所有直播平台的弹幕显示。",
+    "pages": [
+      {
+        "name": "弹幕",
+        "path": "index.html",
+        "width": 400,
+        "height": 600,
+        "description": "建议尺寸400×600放置于任意位置。"
+      }
+    ]
+  }
+  ```
+
+  ::: info 注意
+  `base` 的属性值应该与点心应用的文件夹名称一致，并且添加 `/` 开头和结尾。
+  :::
+
+- **index.html**
+
+  这是一个最基本的 HTML 文件，它把弹幕消息直接输出到 DOM 中。
+
+  ```html
+  <!DOCTYPE html>
+  <html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="referrer" content="no-referrer" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module">
+      import { onMessage, Parser } from 'https://unpkg.com/dimsum-chat@0/dist/dimsum-chat.js'
+      onMessage(msg => {
+        const parser = new Parser(msg)
+        if (parser.type === 'comment') {
+          document.getElementById('app').innerHTML +=
+            `<div>${parser.userName}：${parser.comment}</div>`;
+        }
+      })
+    </script>
+  </body>
+  </html>
+  ```
+
+接下来，你可以打开点心 Chat 主程序，你将发现*样例应用*出现在了装扮页中！
+
+尝试连接一个活跃的直播间，并在浏览器打开弹幕页面（默认情况下，URL 应该是 `http://localhost:13499/example-widget/index.html`），弹幕将在页面中正常显示。
+
+但是，这个弹幕还有很多问题，例如 DOM 元素会永远堆积下去、页面不会正常滚动到底部、用户发送内容可能产生 XSS 攻击等。别担心，这些问题都能通过前端手段解决。
+
+::: tip
+如果在 `Streamer` 目录的子文件夹中存在 `guide.dimsum.json` 文件，并且子文件夹名称与 `base` 项内容相符，那么点心 Chat 主程序会认为这是一个合法的点心应用文件夹。
+:::
+
+## 下一步
+
+- 基于你的前端知识完善这个点心应用，你还可以使用 [Vue](https://vuejs.org/) 之类的前端脚手架。
+
+- 如果想更深入地了解主程序与开发工具提供的功能，请阅读 [API 文档](../api/general)。
+
+- 点心应用开发完成后，务必阅读[打包指南](./pack)。

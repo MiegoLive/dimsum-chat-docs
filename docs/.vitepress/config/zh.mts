@@ -9,9 +9,9 @@ export const zh = defineConfig({
   description: '易于使用与开发的直播美化工具',
   themeConfig: {
     nav: [
-      { text: '用户手册', link: '/zh/user/faq' },
-      { text: '开发者手册', link: '/zh/dev/quick-start' },
-      { text: 'API参考', link: '/zh/api/general' },
+      { text: '用户手册', link: '/zh/user/faq', activeMatch: '/zh/user/' },
+      { text: '开发者手册', link: '/zh/dev/quick-start', activeMatch: '/zh/dev/' },
+      { text: 'API参考', link: '/zh/api/general', activeMatch: '/zh/api/' },
     ],
 
     sidebar: {
@@ -28,8 +28,45 @@ export const zh = defineConfig({
       message: `<a href="https://beian.miit.gov.cn/" target="_blank">京ICP备2022030336号-2</a>`,
       copyright: `版权所有 © 2023-${new Date().getFullYear()} Miego Live 糕社`
     },
+
+    docFooter: {
+      prev: '上一页',
+      next: '下一页'
+    },
+
+    outline: {
+      label: '页面导航'
+    },
+
+    lastUpdated: {
+      text: '最后更新于',
+      formatOptions: {
+        dateStyle: 'short',
+        timeStyle: 'medium'
+      }
+    },
+
+    langMenuLabel: '多语言',
+    returnToTopLabel: '回到顶部',
+    sidebarMenuLabel: '菜单',
+    darkModeSwitchLabel: '主题',
+    lightModeSwitchTitle: '切换到浅色模式',
+    darkModeSwitchTitle: '切换到深色模式'
   }
 })
+
+function sidebarDev(): DefaultTheme.SidebarItem[] {
+  return [
+    {
+      text: '简介',
+      items: [
+        { text: '什么是 DimSum Chat？', link: 'what-is-dimsum-chat' },
+        { text: '快速开始', link: 'quick-start' },
+        { text: '打包', link: 'pack' },
+      ]
+    }
+  ]
+}
 
 function sidebarApi(): DefaultTheme.SidebarItem[] {
   return [
@@ -47,17 +84,6 @@ function sidebarApi(): DefaultTheme.SidebarItem[] {
         { text: '消息解析器', link: 'parser' }
       ]
     },
-  ]
-}
-
-function sidebarDev(): DefaultTheme.SidebarItem[] {
-  return [
-    {
-      text: '简介',
-      items: [
-        { text: '快速开始', link: 'quick-start' },
-      ]
-    }
   ]
 }
 
