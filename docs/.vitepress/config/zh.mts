@@ -9,12 +9,13 @@ export const zh = defineConfig({
   description: '易于使用与开发的直播美化工具',
   themeConfig: {
     nav: [
-      { text: '用户手册', link: '/zh/user/q-a' },
-      { text: '开发者手册', link: '/zh/dev/quickstart' },
+      { text: '用户手册', link: '/zh/user/faq' },
+      { text: '开发者手册', link: '/zh/dev/quick-start' },
       { text: 'API参考', link: '/zh/api/general' },
     ],
 
     sidebar: {
+      '/zh/dev/': { base: '/zh/dev/', items: sidebarDev() },
       '/zh/api/': { base: '/zh/api/', items: sidebarApi() }
     },
 
@@ -46,6 +47,17 @@ function sidebarApi(): DefaultTheme.SidebarItem[] {
         { text: '消息解析器', link: 'parser' }
       ]
     },
+  ]
+}
+
+function sidebarDev(): DefaultTheme.SidebarItem[] {
+  return [
+    {
+      text: '简介',
+      items: [
+        { text: '快速开始', link: 'quick-start' },
+      ]
+    }
   ]
 }
 

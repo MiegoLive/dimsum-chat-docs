@@ -60,7 +60,7 @@
   http://localhost:13499/bface/123456
   ```
 
-  在html中使用：
+  在 HTML 中使用：
   ```html
   <img src="http://localhost:13499/bface/123456" alt="" />
 

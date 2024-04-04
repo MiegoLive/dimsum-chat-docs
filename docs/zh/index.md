@@ -12,10 +12,10 @@ hero:
   actions:
     - theme: brand
       text: 用户手册
-      link: /zh/user/q-a
+      link: /zh/user/faq
     - theme: alt
       text: 开发者手册
-      link: /zh/dev/quickstart
+      link: /zh/dev/quick-start
   image:
     src: /img/dimsum-chat-icon.png
     alt: DimSum Chat

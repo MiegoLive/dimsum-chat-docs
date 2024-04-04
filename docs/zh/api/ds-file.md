@@ -7,10 +7,10 @@
 一个点心应用文件通常具有以下结构：
 
 ```
-- danmu-example.ds
-  - index.html
-  - guide.dimsum.json
-  - ...
+danmu-example.ds
+├─ index.html
+├─ guide.dimsum.json
+└─ ...
 ```
 
 ## 配置文件
