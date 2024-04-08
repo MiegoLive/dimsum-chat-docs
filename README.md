@@ -32,10 +32,10 @@ The two suggested workflows are:
 
 - Use `kebab-case` for file and folder names.
   For example:
-  - `/docs/getting-started/ide-extensions.md`
-  - `/docs/how-to/use-google-fonts.md`
+  - `/docs/dev/quick-start.md`
+  - `/docs/api/websocket-manager.md`
 
-- Images are important to bring the product to life and clarify the written content. For images you're adding to the repo, store them in the `img` subfolder inside `public` folder. For every topic there needs to be a folder inside `\public\img\` section, for example: `public\img\user\q-a\example.png`.
+- Images are important to bring the product to life and clarify the written content. For images you're adding to the repo, store them in the `img` subfolder inside `public` folder. For every topic there needs to be a folder inside `\public\img\` section, for example: `public\img\user\faq\example.png`.
   
   The [tutorial](https://vitepress.dev/zh/guide/asset-handling#base-url) on vitepress is very useful for the need to reference images.
 
