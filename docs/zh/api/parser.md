@@ -25,8 +25,13 @@
   ```js
   import { Parser, onMessage } from 'dimsum-chat'
 
-  onMessage(msg => {
+  onMessage((msg) => {
     const parser = new Parser(msg)
+    console.log(parser)
+  })
+
+  // 在 0.1.4 之后，onMessage 的回调函数会额外传入一个 Parser 对象
+  onMessage((_msg, parser) => {
     console.log(parser)
   })
   ```
@@ -99,6 +104,16 @@
 Acfun 守护团所属主播的用户 ID。
 
 - **类型** `number | undefined`
+
+## parser.douyinSubscribe
+
+用户在当前抖音直播间的会员订阅情况。
+
+- **类型** `0 | 1 | 2 | undefined`
+
+- **详细信息**
+
+  `0` 为非会员，`1` 为月费会员，`2` 为年费会员。
 
 ## parser.avatar
 

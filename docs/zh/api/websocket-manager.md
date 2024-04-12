@@ -8,7 +8,7 @@
 
   ```ts
   function onMessage(
-    callback: (msg: {type: string, content: any}) => void,
+    callback: (msg?: {type: string, content: any}, parser?: Parser) => void,
     options: onMessageOptions = {}
   ): void
 
@@ -32,8 +32,9 @@
   ```js
   import { onMessage } from 'dimsum-chat'
 
-  onMessage(msg => {
+  onMessage((msg, parser) => {
     console.log(msg)
+    console.log(parser)
   })
   ```
 
