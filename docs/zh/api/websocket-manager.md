@@ -8,7 +8,7 @@
 
   ```ts
   function onMessage(
-    callback: (msg?: {type: string, content: any}, parser?: Parser) => void,
+    callback: (msg: {type: string, content: any}, parser: Parser) => void,
     options: onMessageOptions = {}
   ): void
 
