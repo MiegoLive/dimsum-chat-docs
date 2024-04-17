@@ -64,7 +64,13 @@ function sidebarDev(): DefaultTheme.SidebarItem[] {
         { text: '快速开始', link: 'quick-start' },
         { text: '打包', link: 'pack' },
       ]
-    }
+    },
+    {
+      text: '最佳实践',
+      items: [
+        { text: '使用项目模板', link: 'use-template' },
+      ]
+    },
   ]
 }
 
