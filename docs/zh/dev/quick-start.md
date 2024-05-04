@@ -35,6 +35,10 @@ $ bun add dimsum-chat
 
 ## 通过 CDN 使用开发工具包
 
+::: danger 警告
+中国大陆地区用户可能存在 CDN 访问受限问题，我们推荐你使用可访问性较高的 `cdn.jsdelivr.net` 域名。
+:::
+
 你如果不想使用 Node.js，可以借助 script 标签直接通过 CDN 来使用开发工具包：
 
 ```html
