@@ -81,6 +81,7 @@ http://localhost:13499/danmu-example/index.html
     width?: number
     height?: number
     description: string
+    openInBrowserAppMode: boolean
   }
   ```
 
@@ -115,3 +116,9 @@ http://localhost:13499/danmu-example/index.html
   - **类型** `string`
 
     页面的描述信息，一般描述页面的建议尺寸与推荐的布局位置。
+
+  #### page.openInBrowserAppMode
+
+  - **类型** `string`
+
+    页面是否应该用浏览器的app模式打开，若设为 `true`，则仅显示一个*打开页面*按钮，而不显示URL编辑框与复制按钮。
