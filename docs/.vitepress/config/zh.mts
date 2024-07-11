@@ -16,7 +16,8 @@ export const zh = defineConfig({
 
     sidebar: {
       '/zh/dev/': { base: '/zh/dev/', items: sidebarDev() },
-      '/zh/api/': { base: '/zh/api/', items: sidebarApi() }
+      '/zh/api/': { base: '/zh/api/', items: sidebarApi() },
+      '/zh/user/': { base: '/zh/user/', items: sidebarUser() },
     },
 
     editLink: {
@@ -54,6 +55,18 @@ export const zh = defineConfig({
     darkModeSwitchTitle: '切换到深色模式'
   }
 })
+
+function sidebarUser(): DefaultTheme.SidebarItem[] {
+  return [
+    {
+      items: [
+        { text: '初次使用', link: 'first-use'},
+        { text: '问题自检', link: 'self-check'},
+        { text: '常见问题', link: 'faq'},
+      ]
+    }
+  ]
+}
 
 function sidebarDev(): DefaultTheme.SidebarItem[] {
   return [
