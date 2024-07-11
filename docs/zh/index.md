@@ -12,7 +12,7 @@ hero:
   actions:
     - theme: brand
       text: 用户手册
-      link: /zh/user/faq
+      link: /zh/user/first-use
     - theme: alt
       text: 开发者手册
       link: /zh/dev/quick-start
