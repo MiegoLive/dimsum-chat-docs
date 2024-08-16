@@ -2,7 +2,7 @@
 
 ## 访问静态文件
 
-获取 Streamer 目录（ `< 1.0.0` ）下的文件。
+获取 Streamer 目录（ `^1.0.0` 时，为 `%AppData%/MiegoLive/DimSumChat/Widgets/` ）下的文件。
 
 - **方法** `GET`
 
@@ -82,9 +82,9 @@
 
 - **方法** `GET`
 
-- **API** `/bface/{uid}`
+- **API** `/bface/{uid}` （未来将迁移至 `/api/bface/{uid}`）
 
-- **返回类型** `binary`
+- **返回类型** `binary` （ `^1.0.0` 时，为对用户头像 URL 的 302 重定向 ）
 
 - **详细信息**
 
