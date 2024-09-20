@@ -84,6 +84,11 @@ function sidebarDev(): DefaultTheme.SidebarItem[] {
         { text: '使用项目模板', link: 'use-template' },
       ]
     },
+    {
+      items: [
+        { text: '更新历史', link: 'update-history' },
+      ]
+    },
   ]
 }
 

@@ -2,7 +2,7 @@
 # https://vitepress.dev/reference/default-theme-home-page
 layout: home
 
-title: DimSum Chat
+title: DimSum Chat 前端技术分享
 titleTemplate: 易于使用与开发的直播美化工具
 
 hero:
