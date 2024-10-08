@@ -15,5 +15,10 @@ export default defineConfig({
       label: '简体中文',
       ...zh
     }
+  },
+  vite: {
+    ssr: {
+      noExternal: ['vuetify']
+    },
   }
 })
