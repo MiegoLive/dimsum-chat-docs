@@ -9,8 +9,8 @@ export const zh = defineConfig({
   description: '易于使用与开发的直播美化工具',
   themeConfig: {
     nav: [
-      { text: '用户手册', link: '/zh/user/faq', activeMatch: '/zh/user/' },
-      { text: '开发者手册', link: '/zh/dev/quick-start', activeMatch: '/zh/dev/' },
+      { text: '用户手册', link: '/zh/user/first-use', activeMatch: '/zh/user/' },
+      { text: '开发者手册', link: '/zh/dev/what-is-dimsum-chat', activeMatch: '/zh/dev/' },
       { text: 'API参考', link: '/zh/api/general', activeMatch: '/zh/api/' },
     ],
 
@@ -59,12 +59,13 @@ export const zh = defineConfig({
 function sidebarUser(): DefaultTheme.SidebarItem[] {
   return [
     {
+      text: '基础',
       items: [
         { text: '初次使用', link: 'first-use'},
         { text: '问题自检', link: 'self-check'},
-        { text: '常见问题', link: 'faq'},
       ]
-    }
+    },
+
   ]
 }
 
