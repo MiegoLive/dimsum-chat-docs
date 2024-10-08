@@ -95,7 +95,7 @@ const dimsumVersion = ref(undefined);
 const dimsumDownloadUrl = ref(undefined);
 
 onMounted(() => {
-  fetch('http://dimsum-update.miego.live/api/v1/update.json')
+  fetch('https://dimsum-update.miego.live/api/v1/update.json')
    .then(response => response.json())
    .then(data => {
       dimsumVersion.value = data.version;
