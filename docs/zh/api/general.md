@@ -6,7 +6,7 @@
 
 （默认）非自包含模式下，Widgets 目录位于 `%AppData%/MiegoLive/DimSumChat/Widgets/`。
 
-自包含模式下，Widgets 目录位于 `./Data/Widgets/`。见[自包含模式](#self-contained-mode)
+自包含模式下，Widgets 目录位于 `./Data/Widgets/`。见[自包含模式](#self-contained-mode)。
 
 （主程序版本 `<1.0.0` 时，目录为 `./Streamer/` ）
 
