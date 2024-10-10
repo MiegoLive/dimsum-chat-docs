@@ -2,6 +2,8 @@
 
 ## onMessage()
 
+推荐使用的方法。
+
 注册一个回调函数，在收到主程序的 WebSocket 消息后执行。
 
 - **类型**
@@ -25,6 +27,8 @@
   
   ::: info
   该函数的本质是 `WebSocketManager.getInstance()` `WebSocketManager.connect()` `WebSocketManager.addMessageListener()` `getWebSocketURL()` 等 API 的组合，并将消息 json 进行了反序列化。
+
+  在当前最新版本中，我们还加入了认证机制，对于某些官方应用，它将访问我们的官方服务器以确保该应用是已被授权的。否则，所有消息将被覆盖为警告消息。这个认证机制不会影响第三方开发者的使用。
   :::
 
 - **示例**

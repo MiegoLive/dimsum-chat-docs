@@ -2,7 +2,13 @@
 
 ## 访问静态文件
 
-获取 Streamer 目录（ `^1.0.0` 时，为 `%AppData%/MiegoLive/DimSumChat/Widgets/` ）下的文件。
+获取 Widgets 目录下的文件。
+
+（默认）非自包含模式下，Widgets 目录位于 `%AppData%/MiegoLive/DimSumChat/Widgets/`。
+
+自包含模式下，Widgets 目录位于 `./Data/Widgets/`。见[自包含模式](#self-contained-mode)
+
+（主程序版本 `<1.0.0` 时，目录为 `./Streamer/` ）
 
 - **方法** `GET`
 
@@ -10,12 +16,12 @@
 
 - **示例**
 
-  例如，要访问 Streamer 目录下的 example 目录中的 index.html 文件，请使用以下 URL：
+  例如，要访问静态文件目录下的 example 文件夹中的 index.html 文件，请使用以下 URL：
 
-  **默认端口号** `13499`
+  **默认端口号** `13500`
 
   ```url
-  http://localhost:13499/example/index.html
+  http://localhost:13500/example/index.html
   ```
 
 ## 连接 ws 消息
@@ -29,7 +35,7 @@
 - **示例**
 
   ```js
-  const webSocket = new WebSocket('ws://localhost:13499/websocket');
+  const webSocket = new WebSocket('ws://localhost:13500/websocket');
   ```
 
   所有 ws 消息均为 json 字符串且具有以下结构：
@@ -84,16 +90,14 @@
 
 - **API** `/bface/{uid}` （未来将迁移至 `/api/bface/{uid}`）
 
-- **返回类型** `binary` （ `^1.0.0` 时，为对用户头像 URL 的 302 重定向 ）
+- **返回类型** 对用户头像 URL 的 302 重定向
 
 - **详细信息**
 
-  当 `/Cache/bface/` 目录下存在与 uid 数字同名的图像文件时，不调用[哔哩哔哩接口](https://api.bilibili.com/x/web-interface/card)而是直接返回该图像，图像格式匹配遵循以下顺序：`.jpg, .png, .gif, .webp`。
-
-  在调用网络接口获取头像图像后，会自动将图片保存至 `/Cache/bface/` 目录下，并以 uid 数字命名，保留图片原有拓展名。如：`/Cache/bface/123456.jpg`。
+  调用[哔哩哔哩接口](https://api.bilibili.com/x/web-interface/card)获取用户 uid 与头像 URL 的对应关系并缓存。
 
   ::: warning
-  由于哔哩哔哩接口存在访问频率限制，当 API 访问间隔低于10秒时，会返回[哔哩哔哩默认头像](https://i0.hdslb.com/bfs/face/member/noface.jpg)的二进制数据。未被成功下载的头像会加入等待队列中，当 API 超过20秒未被访问时，会将等待队列中的用户头像缓存至 `/Cache/bface/` 目录。
+  由于哔哩哔哩接口存在访问频率限制，当 API 访问间隔低于10秒且无缓存时，会返回[哔哩哔哩默认头像](https://i0.hdslb.com/bfs/face/member/noface.jpg)。未成功的头像缓存任务会加入等待队列中，当 API 超过20秒未被访问时，会执行等待队列中的缓存任务。
   :::
 
 - **示例**
@@ -101,17 +105,17 @@
   例如，要获取 uid 为 `123456` 的哔哩哔哩用户的头像图像数据，请使用以下URL：
 
   ```url
-  http://localhost:13499/bface/123456
+  http://localhost:13500/api/bface/123456
   ```
 
   在 HTML 中使用：
   ```html
-  <img src="http://localhost:13499/bface/123456" alt="" />
+  <img src="http://localhost:13500/api/bface/123456" alt="" />
 
-  <img src="/bface/123456" alt="" />
+  <img src="/api/bface/123456" alt="" />
   ```
 
-## 自包含模式
+## 自包含模式 {#self-contained-mode}
 
 1.0.0 版本前，主程序默认为自包含模式，即所有数据文件存放于主程序所在目录下。
 
