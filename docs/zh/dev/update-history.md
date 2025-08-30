@@ -63,3 +63,7 @@
 
 - 修复B站房间号连接模式初始化时的cookie鉴权问题
 - 修复加载不正确的设置文件导致程序崩溃的问题
+
+### v1.2.0
+
+- 新增[AcFun云表情](https://github.com/MiegoLive/AcfunCloudEmoji)支持
