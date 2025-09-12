@@ -281,6 +281,12 @@ const comment = parser.CommentBuilder((comment, stickerUrl, emots) => {
 
 - **类型** `number | undefined`
 
+## parser.giftImage
+
+礼物图片 URL。
+
+- **类型** `string | undefined`
+
 ## parser.superChatComment
 
 超级聊天评论。
