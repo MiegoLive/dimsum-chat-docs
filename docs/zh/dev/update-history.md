@@ -67,3 +67,15 @@
 ### v1.2.0
 
 - 新增[AcFun云表情](https://github.com/MiegoLive/AcfunCloudEmoji)支持
+
+### v1.3.0
+
+- 新增快手平台支持
+
+### v1.4.0
+
+- 新增 Chzzk 平台支持
+
+### v1.4.1
+
+- 新增 DS 文件随主程序多语言切换功能。需要开发者在 DS 文件中包含 `guide.dimsum.en.json` 等多语言文件。

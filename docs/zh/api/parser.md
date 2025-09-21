@@ -58,7 +58,7 @@
 
 消息所属直播平台。
 
-- **类型** `'acfun' | 'openblive' | 'bilibili' | 'douyin' | undefined` 
+- **类型** `'acfun' | 'openblive' | 'bilibili' | 'douyin' | 'kuaishou' | 'chzzk' | undefined` 
 
 ## parser.type
 
@@ -73,7 +73,7 @@
 
 - **详细信息**
 
-  `guard` 与 `superchat` 类型的消息仅存在于 `bilibili` 与 `openblive` 平台的消息中。
+  `guard` 与 `superchat` 类型的消息原本为 `bilibili` 与 `openblive` 平台的消息。出于兼容性考虑，Chzzk 平台的 Donation 事件被归类为 `superchat` 类型，Subscription 事件被归类为 `guard` 类型。Subscription 事件的 Tier 1 与 Tier 2 分别被映射为 `guardLevel` 属性的 `3` 与 `2` 值。
 
 ## parser.userName
 
@@ -83,7 +83,7 @@
 
 ## parser.uid
 
-用户ID。
+用户ID。对于 Chzzk 平台可能返回 `"anonymous"`。
 
 - **类型** `number | string | undefined`
 
@@ -254,6 +254,18 @@ const comment = parser.CommentBuilder((comment, stickerUrl, emots) => {
 ## parser.guardPrice
 
 大航海购买价格（CNY）。
+
+- **类型** `number | undefined`
+
+## parser.chzzkTier
+
+1 级或 2 级的 Chzzk 订阅等级。
+
+- **类型** `number | undefined`
+
+## parser.chzzkTierMonth
+
+1 级或 2 级的 Chzzk 月费订阅数量。
 
 - **类型** `number | undefined`
 

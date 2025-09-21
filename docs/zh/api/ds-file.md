@@ -122,3 +122,7 @@ http://localhost:13499/danmu-example/index.html
   - **类型** `string`
 
     页面是否应该用浏览器的app模式打开，若设为 `true`，则仅显示一个*打开页面*按钮，而不显示URL编辑框与复制按钮。
+
+### 多语言
+
+点心 Chat 主程序 >= 1.4.1 支持多语言，可添加额外配置文件如 `guide.dimsum.en.json` 用于定义多语言配置。该文件需要遵循与 `guide.dimsum.json` 相同的结构。
