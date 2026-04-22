@@ -15,10 +15,19 @@
     <template v-slot:prepend>
       <v-icon color="#1472d0"></v-icon>
     </template>
-    糕社2群：832347958
+    糕社2群：832347958（已满）
+  </v-btn>
+  <v-btn variant="text" prepend-icon="mdi-qqchat" @click="openLink('https://qm.qq.com/q/UliAleCIYU')">
+    <template v-slot:prepend>
+      <v-icon color="#1472d0"></v-icon>
+    </template>
+    糕社3群：1083903576
   </v-btn>
 </div>
 
+## 最新的在线文档
+
+所有使用问题基本都可以在[这里](https://docs.qq.com/aio/DZGFOWUNvTkFmRnFQ)找到答案。
 
 ## 基础知识
 
