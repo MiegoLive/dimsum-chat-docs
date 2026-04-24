@@ -47,6 +47,10 @@
   }
   ```
 
+  ::: tip 提示
+  详细的 WebSocket API 说明请参考 [WebSocket API 详细文档](./websocket-api)。
+  :::
+
   对于哔哩哔哩 `bilibili` 与哔哩哔哩开放平台 `openblive` 消息，`type` 的内容为对应的 `CMD` 字段，支持所有消息类型。
 
   哔哩哔哩开放平台消息请参考[哔哩哔哩直播开放文档](https://open-live.bilibili.com/document/f9ce25be-312e-1f4a-85fd-fef21f1637f8)。

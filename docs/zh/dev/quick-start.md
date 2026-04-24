@@ -203,7 +203,7 @@ import { onMessage } from 'dimsum-chat'
 
 接下来，你可以打开点心 Chat 主程序，你将发现*样例应用*出现在了装扮页中！
 
-尝试连接一个活跃的直播间，并在浏览器打开弹幕页面（默认情况下，URL 应该是 `http://localhost:13499/example-widget/index.html`），弹幕将在页面中正常显示。
+尝试连接一个活跃的直播间，并在浏览器打开弹幕页面（默认情况下，URL 应该是 `http://localhost:13500/example-widget/index.html`），弹幕将在页面中正常显示。
 
 但是，这个弹幕还有很多问题，例如 DOM 元素会永远堆积下去、页面不会正常滚动到底部、用户发送内容可能产生 XSS 攻击等。别担心，这些问题都能通过前端手段解决。
 

@@ -100,6 +100,7 @@ function sidebarApi(): DefaultTheme.SidebarItem[] {
       items: [
         { text: '常规', link: 'general' },
         { text: '.ds 文件', link: 'ds-file' },
+        { text: 'WebSocket API 详细文档', link: 'websocket-api' },
       ]
     },
     {

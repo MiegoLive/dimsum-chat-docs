@@ -87,7 +87,7 @@
   import { WebSocketManager } from 'dimsum-chat'
 
   const webSocketManager = WebSocketManager.getInstance()
-  webSocketManager.connect('ws://localhost:13499/websocket')
+  webSocketManager.connect('ws://localhost:13500/websocket')
   ```
 
 ## WebSocketManager.addMessageListener()
@@ -112,7 +112,7 @@
   import { WebSocketManager } from 'dimsum-chat'
 
   const webSocketManager = WebSocketManager.getInstance()
-  webSocketManager.connect('ws://localhost:13499/websocket')
+  webSocketManager.connect('ws://localhost:13500/websocket')
 
   webSocketManager.addMessageListener((msg) => {
     let msgObj = JSON.parse(msg)
@@ -154,7 +154,7 @@
   import { WebSocketManager } from 'dimsum-chat'
 
   const webSocketManager = WebSocketManager.getInstance()
-  const WebSocketURL = getWebSocketURL() // ws://localhost:13499/websocket
+  const WebSocketURL = getWebSocketURL() // ws://localhost:13500/websocket
   webSocketManager.connect(WebSocketURL)
   ```
 
@@ -173,5 +173,5 @@
   ```js
   import { getBfaceURL } from 'dimsum-chat'
 
-  const bfaceURL = getBfaceURL(123456) // http://localhost:13499/bface/123456
+  const bfaceURL = getBfaceURL(123456) // http://localhost:13500/bface/123456
   ```

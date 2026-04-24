@@ -38,7 +38,7 @@ danmu-example.ds
 该配置文件包含一个页面入口文件，其 URL 为：
 
 ```url
-http://localhost:13499/danmu-example/index.html
+http://localhost:13500/danmu-example/index.html
 ```
 
 ### name
