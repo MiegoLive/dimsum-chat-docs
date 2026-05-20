@@ -25,9 +25,23 @@
   </v-btn>
 </div>
 
-## 最新的在线文档
+## 使用教程和常见问题
 
-所有使用问题基本都可以在[这里](https://docs.qq.com/aio/DZGFOWUNvTkFmRnFQ)找到答案。
+<div class="doc-link-card" @click="openLink('https://docs.qq.com/aio/DZGFOWUNvTkFmRnFQ')">
+  <div class="doc-link-icon">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+    </svg>
+  </div>
+  <div class="doc-link-text">
+    <span class="doc-link-title">在线文档</span>
+    <span class="doc-link-desc">使用教程和常见问题</span>
+  </div>
+  <svg class="doc-link-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="9 18 15 12 9 6"/>
+  </svg>
+</div>
 
 ## 基础知识
 
@@ -115,3 +129,55 @@ onMounted(() => {
     });
 });
 </script>
+
+<style scoped>
+.doc-link-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--vp-c-bg-soft);
+  margin-bottom: 1rem;
+}
+
+.doc-link-card:hover {
+  border-color: var(--vp-c-brand-1);
+  box-shadow: 0 2px 12px rgba(244, 211, 94, 0.12);
+}
+
+.doc-link-icon {
+  color: var(--vp-c-brand-1);
+  flex-shrink: 0;
+}
+
+.doc-link-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+}
+
+.doc-link-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--vp-c-text-1);
+}
+
+.doc-link-desc {
+  font-size: 0.85rem;
+  color: var(--vp-c-text-3);
+}
+
+.doc-link-arrow {
+  color: var(--vp-c-text-3);
+  flex-shrink: 0;
+}
+
+.doc-link-card:hover .doc-link-arrow {
+  color: var(--vp-c-brand-1);
+}
+</style>
