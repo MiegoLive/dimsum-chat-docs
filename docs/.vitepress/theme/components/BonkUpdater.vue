@@ -35,14 +35,15 @@
         识别到：<strong>{{ detectedName }}</strong>（版本 {{ detectedVersion }}）
       </p>
       <div class="action-buttons">
-        <button class="download-btn" @click="handleDownload">
+        <button class="download-btn" @click="handleDownload" :disabled="!latestInfo">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
-          下载最新版砸砸乐 (ver3.3.3)
+          {{ latestInfo ? `下载最新版砸砸乐 (ver${latestInfo.version})` : fetchFailed ? '获取版本信息失败' : '获取版本信息中...' }}
         </button>
+        <a v-if="fetchFailed" class="retry-link" @click="fetchLatestInfo">重新获取</a>
         <button class="reset-btn" @click="reset">重新验证</button>
       </div>
     </div>
@@ -68,6 +69,7 @@ import { ref } from 'vue'
 import JSZip from 'jszip'
 
 type Step = 'upload' | 'verifying' | 'success' | 'fail'
+interface LatestInfo { version: string; downloadUrl: string }
 
 const step = ref<Step>('upload')
 const dragging = ref(false)
@@ -76,10 +78,37 @@ const fileInput = ref<HTMLInputElement>()
 const detectedName = ref('')
 const detectedVersion = ref('')
 const failReason = ref('')
+const latestInfo = ref<LatestInfo | null>(null)
+const fetchFailed = ref(false)
+
+// Timeout + retry constants
+const FETCH_TIMEOUT = 10000 // 10s
+const MAX_RETRIES = 2 // 3 attempts total
 
 // Known identifiers for bonk widget across all versions
 const BONK_NAMES = ['礼物砸砸乐', '抖音礼物砸脸']
 const BONK_BASES = ['/dimsum-bonk-2024-widget/', '/douyin-bonk-2024-widget/']
+
+const UPDATE_JSON_URL = 'https://dimsum-update.miego.live/widgets/dimsum-bonk-2024-widget/update.json'
+
+async function fetchLatestInfo() {
+  fetchFailed.value = false
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT)
+    try {
+      const r = await fetch(UPDATE_JSON_URL, { signal: controller.signal })
+      const data = await r.json()
+      latestInfo.value = { version: data.version, downloadUrl: data.downloadUrl }
+      return
+    } catch {
+      // retry on timeout or network error
+    } finally {
+      clearTimeout(timer)
+    }
+  }
+  fetchFailed.value = true
+}
 
 function triggerUpload() {
   fileInput.value?.click()
@@ -137,6 +166,7 @@ async function processFile(file: File) {
     detectedName.value = name
     detectedVersion.value = version
     step.value = 'success'
+    fetchLatestInfo()
   } catch (err: any) {
     step.value = 'fail'
     failReason.value = `文件解析失败：${err.message || '未知错误'}。请确认文件完整且未损坏。`
@@ -144,10 +174,12 @@ async function processFile(file: File) {
 }
 
 function handleDownload() {
-  const url = 'https://dimsum-update.miego.live/widgets/dimsum-bonk-2024-widget/%E7%A4%BC%E7%89%A9%E7%A0%B8%E7%A0%B8%E4%B9%90_ver3.3.3.ds'
+  if (!latestInfo.value) return
+  const url = latestInfo.value.downloadUrl
+  const filename = url.split('/').pop() || '礼物砸砸乐.ds'
   const a = document.createElement('a')
   a.href = url
-  a.download = '礼物砸砸乐_ver3.3.3.ds'
+  a.download = filename
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
@@ -158,6 +190,8 @@ function reset() {
   detectedName.value = ''
   detectedVersion.value = ''
   failReason.value = ''
+  latestInfo.value = null
+  fetchFailed.value = false
   if (fileInput.value) {
     fileInput.value.value = ''
   }
@@ -325,5 +359,17 @@ function reset() {
 .reset-btn:hover {
   border-color: var(--vp-c-text-3);
   color: var(--vp-c-text-1);
+}
+
+.retry-link {
+  font-size: 0.85rem;
+  color: var(--vp-c-brand-1);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.retry-link:hover {
+  opacity: 0.8;
 }
 </style>
