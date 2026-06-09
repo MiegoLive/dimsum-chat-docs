@@ -85,8 +85,9 @@ function sidebarDev(): DefaultTheme.SidebarItem[] {
       ]
     },
     {
-      text: '最佳实践',
+      text: '开发指南',
       items: [
+        { text: 'AI Agent 开发指南', link: 'ai-agent-guide' },
         { text: '使用项目模板', link: 'use-template' },
       ]
     },

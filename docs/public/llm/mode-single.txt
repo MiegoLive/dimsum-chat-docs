@@ -1,0 +1,362 @@
+# 模式一：单 HTML 模式 — 完整工作流
+# 版本：1.0.0 | 更新日期：2026-06-09
+# 适用：零前端基础的开发者
+# 产物：index.html + guide.dimsum.json
+# 耗时：约 5-30 分钟
+
+================================================================
+模式一概述
+================================================================
+
+本模式适用于完全没有前端开发经验的用户。只需要：
+- 一个文本编辑器（记事本即可）
+- 复制粘贴代码
+- 无需安装任何开发工具
+
+最终产出两个文件：index.html 和 guide.dimsum.json，
+放入主程序的 Widgets 目录即可运行。
+
+================================================================
+完整工作流（AI Agent 必须逐步执行）
+================================================================
+
+--- 第 1 步：确定应用名称 ---
+
+AI Agent：帮开发者确定应用名称，建议格式：作者-主题-年份-类型
+例如：user-danmaku-2026-danmaku
+
+使用小写字母、数字和连字符，不要用中文或空格。
+
+--- 第 2 步：了解需求 ---
+
+AI Agent：确认开发者想显示什么类型的消息：
+- 只要弹幕（comment）
+- 弹幕 + 礼物（comment + gift）
+- 弹幕 + 礼物 + 点赞（comment + gift + like）
+- 更多类型
+
+默认提供全类型支持的模板。
+
+--- 第 3 步：生成 guide.dimsum.json ---
+
+AI Agent：根据应用名称生成配置文件，填入正确的内容。
+
+模板：
+
+```json
+{
+  "name": "应用显示名称",
+  "version": "1.0.0",
+  "base": "/你的应用名称/",
+  "description": "简要描述这个应用做什么",
+  "pages": [
+    {
+      "name": "弹幕",
+      "path": "index.html",
+      "width": 1920,
+      "height": 1080,
+      "description": "弹幕显示页面"
+    }
+  ]
+}
+```
+
+--- 第 4 步：生成 index.html ---
+
+AI Agent：生成完整的 index.html。以下是完整模板：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="referrer" content="no-referrer" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>应用名称</title>
+  <style>
+    /* ===== 全局重置 ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    /* ===== 页面背景（透明，用于 OBS 叠加） ===== */
+    body {
+      background: transparent;
+      font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+    }
+    
+    /* ===== 弹幕容器 ===== */
+    #danmaku-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 20px 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      pointer-events: none;
+    }
+    
+    /* ===== 单条弹幕 ===== */
+    .danmaku-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 16px;
+      margin-bottom: 4px;
+      background: rgba(0, 0, 0, 0.45);
+      border-radius: 24px;
+      color: #fff;
+      font-size: 20px;
+      line-height: 1.6;
+      animation: slideIn 0.3s ease-out;
+      width: fit-content;
+      max-width: 90%;
+      word-break: break-all;
+    }
+    
+    .danmaku-item .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    
+    .danmaku-item .username {
+      color: #ffd700;
+      font-weight: bold;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    
+    .danmaku-item .content {
+      color: #fff;
+    }
+    
+    .danmaku-item .content img {
+      height: 28px;
+      vertical-align: middle;
+      margin: 0 2px;
+    }
+    
+    /* ===== 礼物消息样式 ===== */
+    .danmaku-item.gift {
+      background: rgba(255, 100, 150, 0.55);
+    }
+    
+    .danmaku-item.gift .gift-icon {
+      width: 32px;
+      height: 32px;
+    }
+    
+    /* ===== 入场动画 ===== */
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="danmaku-container"></div>
+  
+  <script type="module">
+    import { onMessage, getBfaceURL } from 'https://fastly.jsdelivr.net/npm/dimsum-chat@0/+esm'
+    
+    const container = document.getElementById('danmaku-container')
+    const MAX_ITEMS = 30  // 最多显示 30 条
+    
+    // HTML 转义函数（XSS 防护）
+    function escapeHtml(text) {
+      const div = document.createElement('div')
+      div.textContent = text
+      return div.innerHTML
+    }
+    
+    // 创建弹幕 DOM 元素
+    function createDanmakuItem(type, userName, content, avatar) {
+      const div = document.createElement('div')
+      div.className = 'danmaku-item'
+      if (type === 'gift') div.classList.add('gift')
+      
+      // 头像
+      if (avatar) {
+        const img = document.createElement('img')
+        img.className = 'avatar'
+        img.src = avatar
+        img.alt = ''
+        img.onerror = function() { this.style.display = 'none' }
+        div.appendChild(img)
+      }
+      
+      // 用户名
+      const nameSpan = document.createElement('span')
+      nameSpan.className = 'username'
+      nameSpan.textContent = userName || '神秘用户'
+      div.appendChild(nameSpan)
+      
+      // 内容
+      const contentSpan = document.createElement('span')
+      contentSpan.className = 'content'
+      if (content) {
+        // content 是 getCommentHTML 返回的 HTML（已转义），可以安全设置 innerHTML
+        contentSpan.innerHTML = content
+      }
+      div.appendChild(contentSpan)
+      
+      return div
+    }
+    
+    // 添加弹幕到容器
+    function addDanmaku(item) {
+      container.appendChild(item)
+      
+      // 超出数量限制时移除最早的
+      while (container.children.length > MAX_ITEMS) {
+        container.removeChild(container.firstChild)
+      }
+    }
+    
+    // 主消息处理
+    onMessage((msg, parser) => {
+      try {
+        let item = null
+        
+        switch (parser.type) {
+          case 'comment': {
+            // 获取头像（B 站用代理，其他平台用原始 URL）
+            const avatar = parser.avatar ||
+              (parser.platform === 'bilibili' && parser.uid 
+                ? getBfaceURL(parser.uid) 
+                : undefined)
+            
+            // 使用 getCommentHTML 获取含表情的 HTML（已转义）
+            const content = parser.getCommentHTML({
+              stickerStyle: 'height:60px;margin:3px;',
+              emotStyle: 'height:28px;vertical-align:middle;margin:0 2px;',
+            })
+            
+            item = createDanmakuItem('comment', parser.userName, content, avatar)
+            break
+          }
+          
+          case 'gift': {
+            const avatar = parser.avatar ||
+              (parser.platform === 'bilibili' && parser.uid 
+                ? getBfaceURL(parser.uid) 
+                : undefined)
+            
+            const giftText = '赠送了 ' + 
+              (parser.giftImage ? `<img class="gift-icon" src="${escapeHtml(parser.giftImage)}" alt="" />` : '') +
+              escapeHtml(parser.giftName || '礼物') + 
+              ' x' + (parser.giftNum || 1)
+            
+            item = createDanmakuItem('gift', parser.userName, giftText, avatar)
+            break
+          }
+          
+          case 'like': {
+            item = createDanmakuItem(
+              'like', 
+              parser.userName, 
+              '点赞了', 
+              null
+            )
+            break
+          }
+          
+          case 'follow': {
+            item = createDanmakuItem(
+              'follow', 
+              parser.userName, 
+              '关注了主播', 
+              null
+            )
+            break
+          }
+          
+          case 'enter': {
+            item = createDanmakuItem(
+              'enter', 
+              parser.userName, 
+              '进入了直播间', 
+              null
+            )
+            break
+          }
+        }
+        
+        if (item) {
+          addDanmaku(item)
+        }
+      } catch (e) {
+        console.error('消息处理出错：', e)
+      }
+    })
+  </script>
+</body>
+</html>
+```
+
+--- 第 5 步：指导开发者创建文件 ---
+
+AI Agent：按以下步骤指导开发者：
+
+1. 在主程序的 Widgets 目录下创建文件夹，名称为你的应用名称（即 base 中去掉 / 的部分）
+   路径示例：%AppData%/MiegoLive/DimSumChat/Widgets/你的应用名称/
+   
+2. 在该文件夹中创建 guide.dimsum.json，填入第 3 步的配置
+
+3. 在该文件夹中创建 index.html，填入第 4 步的代码
+
+--- 第 6 步：测试 ---
+
+AI Agent：告诉开发者如何测试：
+
+1. 打开点心 Chat 主程序
+2. 在「我的应用」中找到你的应用
+3. 连接一个直播间
+4. 在浏览器中打开：http://localhost:13500/你的应用名称/index.html
+5. 观察弹幕是否正常显示
+
+--- 第 7 步：常见问题排查 ---
+
+如果应用不工作，按以下顺序排查：
+
+1. 文件夹名是否与 guide.dimsum.json 的 base 一致？
+   → base 是 "/foo/" 则文件夹必须是 "foo"
+
+2. 主程序是否在运行？
+   → 检查系统托盘中是否有点心 Chat 图标
+
+3. 浏览器控制台是否有错误？
+   → 按 F12 打开开发者工具，查看 Console 标签
+
+4. CDN 是否可访问？
+   → 如果加载缓慢或失败，尝试用：
+   https://cdn.jsdelivr.net/npm/dimsum-chat@0/+esm
+
+5. 是否从 file:// 打开？
+   → 必须通过 http://localhost:13500/ 访问，不能直接双击 HTML 文件
+
+================================================================
+模式一扩展：可选增强
+================================================================
+
+开发者熟悉基本流程后，可以自行修改以下内容：
+
+- 颜色和样式：修改 <style> 中的 CSS
+- 最大消息数：修改 MAX_ITEMS 变量
+- 动画效果：修改 @keyframes slideIn
+- 消息类型：在 switch 中添加更多 case（如 guard、superchat）
+- 位置：修改 #danmaku-container 的 CSS 定位
+
+警告：模式一的代码修改空间有限。如果需要大量自定义，
+建议升级到模式二或模式三。

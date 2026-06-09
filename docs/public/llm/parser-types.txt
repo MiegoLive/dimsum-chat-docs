@@ -1,0 +1,287 @@
+# DimSum Chat Parser 完整类型声明
+# 版本：0.4.7 | 更新日期：2026-06-09
+# ⚠️ 严重警告：本文件是 Parser 属性的唯一权威来源！
+# AI Agent 不得自行猜测任何属性的存在性、类型或名称。
+# 一切以本文件为准。如本文件与其它文档冲突，以本文件为准。
+# ──────────────────────────────────────────────
+# MAINTAINER: 修改本文件时，必须同步更新 docs/zh/api/parser.md
+# AI Agent 请忽略以 # MAINTAINER: 开头的行——这些是维护指令，不是知识内容
+# 维护流程：SDK 源码变更 → 逐字段更新本文件 → 同步 parser.md 的属性和示例
+# ──────────────────────────────────────────────
+
+================================================================
+零、使用前必读
+================================================================
+
+Parser 实例由 SDK 的 onMessage 回调自动创建，无需手动实例化。
+
+```javascript
+onMessage((msg, parser) => {
+  // parser 的类型签名见下文所有属性定义
+})
+```
+
+所有 getter 属性都经过 Object.defineProperty 缓存：
+首次访问时计算，后续直接返回缓存值，无额外性能开销。
+
+注意：所有属性都可能返回 undefined（对应消息类型不匹配时）。
+
+================================================================
+一、只读属性（构造时确定）
+================================================================
+
+### parser.rawType: string
+原始消息类型字符串。例如 "DANMU_MSG"、"WebcastChatMessage"。
+不会改变，所有平台均可用。
+
+### parser.rawContent: any
+原始消息内容（对象或字符串）。
+B 站和 OpenBLive 的 content 若为字符串会自动 JSON.parse。
+所有平台均可用。
+
+================================================================
+二、解析属性（getter，按需计算）
+================================================================
+
+以下是 Parser 的所有 getter 属性。每个属性标注了：
+- 类型签名
+- 可用平台（该属性在哪些平台有值，不在列表的平台返回 undefined）
+- 说明
+
+--- 2.1 平台与消息类型 ---
+
+### parser.platform
+类型：`"acfun" | "openblive" | "bilibili" | "douyin" | "kuaishou" | "chzzk" | undefined`
+所有平台可用。
+根据 rawType 自动判断。用于区分不同平台的原始消息格式。
+
+### parser.type
+类型：`"comment" | "gift" | "follow" | "joinclub" | "like" | "guard" | "superchat" | "enter" | "share" | undefined`
+所有平台可用。
+统一消息类型，屏蔽各平台差异。这是消息处理 switch 的核心判断字段。
+
+--- 2.2 用户信息 ---
+
+### parser.userName: string | undefined
+可用平台：全平台
+用户昵称/用户名。
+
+### parser.uid: number | string | undefined
+可用平台：全平台
+用户 ID。CHZZK 匿名用户可能为 "anonymous"。
+
+### parser.avatar: string | undefined
+️ 注意：属性名是 avatar，不是 userAvatar！
+可用平台：bilibili、openblive、acfun、douyin、kuaishou
+用户头像的原始 URL。B 站头像可能需配合 getBfaceURL() 使用以解决 CORS：
+```javascript
+const avatar = parser.platform === 'bilibili' && parser.uid
+  ? getBfaceURL(parser.uid)
+  : parser.avatar
+```
+
+--- 2.3 粉丝团/俱乐部 ---
+
+### parser.clubLevel: number | undefined
+可用平台：bilibili、openblive、acfun、douyin
+粉丝团等级（数字）。
+
+### parser.clubName: string | undefined
+可用平台：bilibili、openblive、acfun、douyin
+粉丝团名称。
+
+### parser.acfunClubUid: number | undefined
+可用平台：acfun
+AcFun 粉丝团所属主播的 UID。用于判断粉丝团是否属于当前直播间。
+
+### parser.douyinSubscribe: 0 | 1 | 2 | undefined
+可用平台：douyin
+抖音直播间订阅状态：
+- 0 = 非会员
+- 1 = 月度会员
+- 2 = 年度会员
+
+--- 2.4 大航海/守护 ---
+
+### parser.guardLevel: 0 | 3 | 2 | 1 | undefined
+可用平台：bilibili、openblive、chzzk
+大航海等级：0=无 3=舰长 2=提督 1=总督。
+若 type 为 guard，则表示购买的大航海等级。
+
+### parser.guardNum: number | undefined
+可用平台：bilibili、openblive、chzzk
+大航海/订阅数量。B站为大航海月数，CHZZK为订阅月数。
+
+### parser.guardPrice: number | undefined
+可用平台：bilibili、openblive
+大航海价格（人民币，元）。
+
+--- 2.5 弹幕/评论 ---
+
+### parser.comment: string | undefined
+可用平台：全平台（仅在 type=comment 或 type=superchat 时有值）
+弹幕/评论的纯文本内容。不含表情图片。
+如需含表情的 HTML，请用 getCommentHTML()。
+
+### parser.getCommentHTML(options?: commentParseOptions): string | undefined
+可用平台：全平台（仅在 type=comment 时有值）
+返回含表情/贴纸的 HTML 字符串。已做 XSS 转义，可安全设置 innerHTML。
+
+参数类型 commentParseOptions（均为可选）：
+```typescript
+interface commentParseOptions {
+  stickerStyle?: string    // 贴纸图片的 style 属性
+  stickerClass?: string    // 贴纸图片的 class 属性
+  emotStyle?: string       // 表情图片的 style 属性
+  emotClass?: string       // 表情图片的 class 属性
+  acfunCustomStickers?: { keyWord: string; path: string }[]  // AcFun 自定义贴纸
+  acfunCustomHtmlBuilder?: (stickerPath: string, content: string) => string
+}
+```
+
+使用示例：
+```javascript
+const html = parser.getCommentHTML({
+  stickerStyle: "height:80px;margin:5px;",
+  emotStyle: "height:36px;vertical-align:baseline;transform:translateY(4px);",
+})
+element.innerHTML = html  // 安全
+```
+
+### parser.CommentBuilder(builder): string | undefined
+可用平台：全平台（仅在 type=comment 时有值）
+自定义弹幕内容构建器。相比 getCommentHTML 提供更灵活的控制。
+
+builder 函数签名：
+```typescript
+(comment: string, stickerUrl?: string, emots?: [string, string][]) => string
+```
+
+--- 2.6 礼物 ---
+
+### parser.giftName: string | undefined
+️ 注意：属性名是 giftName（与知识库一致）
+可用平台：acfun、bilibili、openblive、douyin、kuaishou（仅在 type=gift 时有值）
+礼物名称。
+
+### parser.giftNum: number | undefined
+️ 注意：属性名是 giftNum，不是 giftCount！
+可用平台：acfun、bilibili、openblive、douyin、kuaishou（仅在 type=gift 时有值）
+礼物数量。抖音和快手已自动处理连击去重（每次只返回增量）。
+
+### parser.giftUnitPrice: number | undefined
+️ 注意：属性名是 giftUnitPrice，不是 giftPrice！
+可用平台：acfun、bilibili、openblive、douyin、kuaishou（仅在 type=gift 时有值）
+单个礼物的价格（人民币，元）。免费礼物（如B站银瓜子）价格返回 0。
+
+### parser.giftTotalPrice: number | undefined
+可用平台：全平台（仅在 type=gift 且有 giftNum 和 giftUnitPrice 时有值）
+总价 = giftNum * giftUnitPrice。
+
+### parser.giftImage: string | undefined
+️ 注意：属性名是 giftImage，不是 giftIcon！
+可用平台：acfun、bilibili、openblive、douyin、kuaishou（仅在 type=gift 时有值）
+礼物图片 URL。
+
+### parser.price: number | undefined
+可用平台：全平台
+便捷属性。根据 type 自动返回：
+- type=gift → giftTotalPrice
+- type=superchat → superChatPrice
+- type=guard → guardPrice
+
+--- 2.7 醒目留言 ---
+
+### parser.superChatComment: string | undefined
+可用平台：bilibili、openblive、chzzk（仅在 type=superchat 时有值）
+醒目留言文本内容。
+
+### parser.superChatPrice: number | undefined
+可用平台：bilibili、openblive、chzzk（仅在 type=superchat 时有值）
+醒目留言金额。B站为人民币，CHZZK为韩元（1 cheese = 1 KRW）。
+
+--- 2.8 CHZZK 特有 ---
+
+### parser.chzzkTier: number | undefined
+可用平台：chzzk
+CHZZK 订阅等级（1-3）。
+
+### parser.chzzkTierMonth: number | undefined
+可用平台：chzzk
+CHZZK 订阅月数。
+
+--- 2.9 抽象等级 ---
+
+### parser.getAbstractLevel(options?: abstractLevelOptions): number | undefined
+可用平台：全平台
+统一的用户等级抽象函数。参数类型：
+
+```typescript
+interface abstractLevelOptions {
+  douyinSteps?: number[]   // 抖音粉丝团等级分段，默认 [7, 11, 15]
+  kuaishouSteps?: number[] // 快手粉丝团等级分段，默认 [7, 11, 15]
+  acfunSteps?: number[]    // AcFun粉丝团等级分段，默认 [7, 11, 15]
+  acfunClubUid?: number    // AcFun目标主播UID，默认 0
+}
+```
+
+不同平台的映射规则：
+- douyin/kuaishou/acfun：根据 clubLevel 和 steps 分段映射为 0-3
+- bilibili/openblive：根据 guardLevel 映射（总督=3, 提督=2, 舰长=1, 无=0）
+- chzzk：直接使用 chzzkTier
+
+================================================================
+三、属性速查表（按消息类型）
+================================================================
+
+AI Agent 注意：以下表格列出各消息类型下保证有值的属性。
+不在列表中的属性可能返回 undefined，需做空值检查。
+
+--- comment（弹幕）---
+有值属性：rawType, rawContent, platform, type, userName, uid, avatar, comment,
+          clubLevel, clubName, guardLevel, douyinSubscribe (douyin)
+方法：getCommentHTML(), CommentBuilder()
+
+--- gift（礼物）---
+有值属性：rawType, rawContent, platform, type, userName, uid, giftName,
+          giftNum, giftUnitPrice, giftTotalPrice, giftImage, price
+
+--- guard（大航海）---
+有值属性：rawType, rawContent, platform, type, userName, uid,
+          guardLevel, guardNum, guardPrice, price
+
+--- superchat（醒目留言）---
+有值属性：rawType, rawContent, platform, type, userName, uid,
+          superChatComment, superChatPrice, comment, price
+
+--- like（点赞）---
+有值属性：rawType, rawContent, platform, type, userName, uid
+
+--- follow（关注）---
+有值属性：rawType, rawContent, platform, type, userName, uid
+
+--- enter（入场）---
+有值属性：rawType, rawContent, platform, type, userName, uid
+
+================================================================
+四、常见幻觉与纠正
+================================================================
+
+以下列出 AI Agent 最容易猜错的字段。遇到这些请对照本文纠正：
+
+| 幻觉字段（不存在）   | 正确字段            | 说明                              |
+|-------------------|-------------------|----------------------------------|
+| parser.userAvatar | parser.avatar     | 属性名就是 avatar，无 user 前缀    |
+| parser.giftCount  | parser.giftNum    | 是 giftNum，不是 giftCount        |
+| parser.giftPrice  | parser.giftUnitPrice 或 parser.giftTotalPrice | 两个独立属性，不是 giftPrice |
+| parser.giftIcon   | parser.giftImage  | 是 giftImage，不是 giftIcon       |
+| parser.giftCombo  | 不存在              | 连击已内部去重，无需手动处理         |
+| parser.commentEmots| 不存在             | 用 getCommentHTML() 获取含表情 HTML |
+| parser.level      | 不存在              | 用 clubLevel 或 guardLevel         |
+| parser.isVip      | 不存在              | 用 guardLevel > 0 判断             |
+| parser.isGuard    | 不存在              | 用 guardLevel > 0 判断             |
+| parser.roomId     | 不存在              | Parser 不提供房间信息              |
+| parser.roomName   | 不存在              | Parser 不提供房间信息              |
+| parser.anchorName | 不存在              | Parser 不提供主播信息              |
+| parser.anchorId   | 不存在              | Parser 不提供主播信息              |
+| parser.timestamp  | 不存在              | Parser 不提供时间戳               |

@@ -1,0 +1,243 @@
+# DimSum Chat 核心共享知识
+# 版本：1.0.0 | 更新日期：2026-06-09
+# 本文件为 AI Agent 提供开发点心应用所需的核心技术知识
+# 详细内容请参阅知识库：E:\个人项目\糕\知识库\
+
+================================================================
+一、系统架构概述
+================================================================
+
+点心 Chat 是一款直播美化软件。架构如下：
+
+  直播平台 → 主程序（弹幕接入）→ WebSocket 广播 → Widget（HTML 应用）→ UI 渲染
+
+主程序通过本地 Web 服务器（EmbedIO，默认端口 13500）提供 HTML 服务，
+同时通过 WebSocket（ws://localhost:13500/websocket）将直播间互动数据推送给 Widget。
+Widget 通过 dimsum-chat SDK（npm 包）连接 WebSocket 并解析消息。
+
+================================================================
+二、Widget 目录结构
+================================================================
+
+```
+Widgets/                           ← 主程序 Widgets 目录
+└── your-widget-name/              ← 必须与 guide.dimsum.json 的 base 一致
+    ├── guide.dimsum.json          ← 必需！配置文件
+    ├── index.html                 ← 入口页面
+    └── ...（其他静态资源）
+```
+
+================================================================
+三、guide.dimsum.json 配置格式（必知）
+================================================================
+
+```json
+{
+  "name": "应用名称",
+  "version": "1.0.0",
+  "base": "/your-widget-name/",
+  "description": "应用描述",
+  "pages": [
+    {
+      "name": "弹幕",
+      "path": "index.html",
+      "width": 400,
+      "height": 600,
+      "description": "建议尺寸 400x600。"
+    }
+  ]
+}
+```
+
+关键规则：
+- base（必填）：必须以 / 开头和结尾，与文件夹名一致
+- 命名规范：author-theme-year-type，如 moonmi-icecream-2024-danmaku
+- 仅使用小写字母、数字、连字符
+- pages[].path：HTML 文件路径或查询字符串（如 ?danmu）
+- pages[].description 含"浏览器中打开"时，该页面会在外部浏览器打开
+- 国际化：guide.dimsum.{culture}.json（如 guide.dimsum.zh-CN.json）
+
+================================================================
+四、SDK 核心 API
+================================================================
+
+⚠️ Parser 属性的完整类型声明请以 parser-types.txt 为准！
+   切勿猜测属性名——错误示例：giftCount（正确是 giftNum）、
+   userAvatar（正确是 avatar）、giftIcon（正确是 giftImage）。
+
+4.1 CDN 引入（推荐方式）
+
+```html
+<script type="module">
+  import { onMessage, Parser } from 'https://fastly.jsdelivr.net/npm/dimsum-chat@0/+esm'
+</script>
+```
+
+备选 CDN：https://cdn.jsdelivr.net/npm/dimsum-chat@0/+esm
+
+4.2 onMessage — 核心入口
+
+```javascript
+onMessage((msg, parser) => {
+  // msg: 原始消息 { type: string, content: any }
+  // parser: Parser 实例，提供统一的消息属性
+})
+```
+
+- 自动连接 WebSocket（无需手动管理连接）
+- 自动响应 DimSumChatWidgetInfoResponse（无需手动处理）
+- 可选参数：{ customWsServer: 'ws://localhost:13500/websocket' }
+
+4.3 Parser — 消息解析器核心属性
+
+将各平台原始消息统一为标准属性（完整列表见 parser-types.txt）：
+
+| 属性           | 类型        | 说明                                    |
+|--------------|-----------|---------------------------------------|
+| type         | string    | 统一消息类型（见第五节）                    |
+| platform     | string    | 平台标识                                |
+| userName     | string    | 用户昵称                                |
+| uid          | number\|string | 用户 ID                              |
+| avatar       | string    | 头像 URL（注意：是 avatar，不是 userAvatar） |
+| comment      | string    | 弹幕文本（type=comment 时）              |
+| giftName     | string    | 礼物名称（type=gift 时）                 |
+| giftNum      | number    | 礼物数量（注意：是 giftNum，不是 giftCount）  |
+| giftUnitPrice| number    | 礼物单价（元，注意：是 giftUnitPrice）       |
+| giftTotalPrice| number   | 礼物总价 = giftNum * giftUnitPrice       |
+| giftImage    | string    | 礼物图片 URL（注意：是 giftImage，不是 giftIcon） |
+| clubLevel    | number    | 粉丝团等级                               |
+| guardLevel   | 0\|3\|2\|1 | 大航海等级                             |
+| price        | number    | 便捷价格（自动根据 type 选择）               |
+
+⚠️ 不存在这些属性：userAvatar, giftCount, giftPrice, giftIcon, giftCombo,
+   commentEmots, level, isVip, isGuard, roomId, roomName, anchorName,
+   anchorId, timestamp。完整属性列表见 parser-types.txt。
+
+属性缓存：所有属性首次访问时计算并缓存，多次读取无额外开销。
+
+4.4 getCommentHTML(options)
+
+返回含表情图片的 HTML 字符串，已做 XSS 转义，可安全插入 innerHTML：
+
+```javascript
+const html = parser.getCommentHTML({
+  stickerStyle: "height:80px;margin:5px;",
+  emotStyle: "height:36px;vertical-align:baseline;",
+})
+element.innerHTML = html  // 安全，已转义
+```
+
+4.5 getBfaceURL(uid)
+
+生成 B 站头像代理 URL（避免 CORS）：
+
+```javascript
+const avatar = parser.platform === 'bilibili' && parser.uid
+  ? getBfaceURL(parser.uid)
+  : parser.avatar  // 注意：属性名是 avatar，不是 userAvatar！
+```
+
+================================================================
+五、统一消息类型
+================================================================
+
+| type       | 含义       |
+|-----------|----------|
+| comment    | 弹幕/评论  |
+| gift       | 礼物      |
+| follow     | 关注      |
+| joinclub   | 加入粉丝团 |
+| like       | 点赞      |
+| guard      | 上舰/守护  |
+| superchat  | 超级留言   |
+| enter      | 进入直播间 |
+| share      | 分享      |
+
+使用方式：
+
+```javascript
+onMessage((msg, parser) => {
+  switch (parser.type) {
+    case 'comment': /* 处理弹幕 */ break
+    case 'gift':    /* 处理礼物 */ break
+    case 'like':    /* 处理点赞 */ break
+    // ...
+  }
+})
+```
+
+================================================================
+六、平台标识
+================================================================
+
+| 平台       | 标识符     |
+|----------|----------|
+| Bilibili | bilibili  |
+| 抖音      | douyin   |
+| 快手      | kuaishou |
+| CHZZK    | chzzk    |
+| AcFun    | acfun    |
+| OpenBLive| openblive|
+
+================================================================
+七、安全规范（强制）
+================================================================
+
+7.1 XSS 防护
+
+直接插入用户内容到 innerHTML 前必须转义：
+
+```javascript
+function escapeHtml(text) {
+  const div = document.createElement('div')
+  div.textContent = text
+  return div.innerHTML
+}
+```
+
+推荐使用 parser.getCommentHTML()（已内置转义）。
+
+7.2 CORS 策略
+
+- HTML 中必须添加：<meta name="referrer" content="no-referrer" />
+- Widget 必须通过主程序服务器加载（localhost:13500），不能以 file:// 打开
+
+7.3 错误处理
+
+每条消息处理都应包裹 try-catch：
+
+```javascript
+onMessage((msg, parser) => {
+  try {
+    // 处理消息
+  } catch (e) {
+    console.error('消息处理失败：', e)
+  }
+})
+```
+
+================================================================
+八、打包分发
+================================================================
+
+.ds 文件本质是 ZIP 压缩包，包含所有静态资源。
+
+手动打包步骤：
+1. 将项目文件放入以 base 命名的文件夹
+2. 压缩为 ZIP（确保 guide.dimsum.json 在根目录）
+3. 将 .zip 重命名为 .ds
+
+用户安装：主程序 → 「我的应用」→ 安装 .ds 文件
+
+================================================================
+九、常用键值速查
+================================================================
+
+WebSocket 默认端口：13500
+WebSocket 路径：/websocket
+SDK CDN（国内）：https://fastly.jsdelivr.net/npm/dimsum-chat@0/+esm
+配置文件名：guide.dimsum.json（必须）
+打包后缀：.ds
+Widget 访问 URL 格式：http://localhost:13500/{base}/index.html
+npm 包名：dimsum-chat
+npm 版本：0.4.7

@@ -1,0 +1,398 @@
+# 模式三：Vue3+TypeScript 模板模式 — 完整工作流
+# 版本：1.0.0 | 更新日期：2026-06-09
+# 适用：熟悉现代前端工具链的开发者
+# 模板地址：https://github.com/MiegoLive/dimsum-chat-vue3-ts-template
+# 耗时：约 1-4 小时
+
+================================================================
+模式三概述
+================================================================
+
+本模式适用于有现代前端开发经验的开发者。使用官方 Vue3+TypeScript 模板，
+提供完整的工程化开发体验：
+
+- Vue 3.5+ + <script setup> 语法
+- TypeScript 6.0+ 严格模式
+- Vite 8.0+ 构建工具（HMR 热更新）
+- SCSS CSS 预处理
+- dimsum-chat SDK 0.4.7+
+- 一键打包 .ds 文件
+- 国际化（i18n）支持
+- TransitionGroup 动画系统
+
+================================================================
+完整工作流（AI Agent 必须逐步执行）
+================================================================
+
+--- 第 1 步：环境检查 ---
+
+AI Agent：确认开发者环境满足以下条件：
+
+- Node.js >= 18.0
+- 包管理器已安装（推荐 pnpm）
+
+检查命令：
+  node --version
+  pnpm --version
+
+如果不是 pnpm，可改用 npm 或 yarn，本工作流中所有 pnpm 替换为对应命令即可。
+
+--- 第 2 步：创建项目 ---
+
+AI Agent：指导开发者执行以下命令：
+
+```bash
+# 方式一：使用 degit（推荐，不携带 git 历史）
+pnpm install -g degit
+degit github:miegolive/dimsum-chat-vue3-ts-template my-widget
+cd my-widget
+pnpm install
+
+# 方式二：直接克隆
+git clone https://github.com/MiegoLive/dimsum-chat-vue3-ts-template.git my-widget
+cd my-widget
+rm -rf .git
+pnpm install
+```
+
+--- 第 3 步：初始化配置（强制步骤，不可跳过）---
+
+AI Agent：以下是克隆模板后必须修改的 4 个文件：
+
+3.1 vite.config.ts
+
+```typescript
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+
+export default defineConfig({
+  plugins: [vue()],
+  base: '/your-widget-name/'  // ← 修改为你的应用名称
+})
+```
+
+3.2 public/guide.dimsum.json
+
+```json
+{
+  "name": "你的应用显示名称",
+  "version": "1.0.0",
+  "base": "/your-widget-name/",
+  "description": "应用描述",
+  "pages": [
+    {
+      "name": "弹幕",
+      "path": "?danmu",
+      "width": 1920,
+      "height": 1080
+    }
+  ]
+}
+```
+
+3.3 package.json
+
+```json
+{
+  "name": "your-widget-name",
+  "version": "1.0.0",
+  ...
+}
+```
+
+3.4 index.html
+
+修改 <title> 标签内容为你的应用名称。
+
+命名规范：author-theme-year-type，仅用小写字母、数字、连字符。
+
+--- 第 4 步：理解项目结构 ---
+
+AI Agent：向开发者解释模板的关键文件：
+
+```
+your-widget-name/
+├── public/
+│   └── guide.dimsum.json       ← Widget 配置（已修改）
+├── src/
+│   ├── components/
+│   │   ├── DanmuView.vue       ← 弹幕视图核心组件（主要修改对象）
+│   │   └── Utils.ts            ← 工具函数（uuid, escapeHtml）
+│   ├── App.vue                 ← 路由控制（根据 URL 参数渲染页面）
+│   ├── main.ts                 ← 应用入口
+│   └── style.css               ← 全局样式
+├── index.html
+├── vite.config.ts              ← Vite 配置（已修改）
+├── dimsum.pack.js              ← 打包脚本
+└── package.json                ← 项目配置（已修改）
+```
+
+--- 第 5 步：开发弹幕组件 ---
+
+AI Agent：根据开发者需求，帮助修改 DanmuView.vue。
+
+模板中 DanmuView.vue 的核心结构：
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { onMessage, getBfaceURL } from 'https://fastly.jsdelivr.net/npm/dimsum-chat@0/+esm'
+import { uuid, escapeHtml } from './Utils'
+
+interface DanmakuItem {
+  type: string
+  name?: string
+  avatar?: string
+  content?: string
+  uuid: string
+}
+
+const items = ref<DanmakuItem[]>([])
+const MAX_ITEMS = 30
+
+onMessage(
+  (_msg, parser) => {
+    if (parser.type === 'comment') {
+      const avatar = parser.avatar ||
+        (parser.platform === 'bilibili' && parser.uid ? getBfaceURL(parser.uid) : undefined)
+      
+      const content = parser.getCommentHTML({
+        stickerStyle: 'height:80px;margin:5px;',
+        emotStyle: 'height:36px;vertical-align:baseline;transform:translateY(4px);',
+      })
+      
+      items.value.push({
+        type: parser.type,
+        name: parser.userName,
+        content,
+        avatar,
+        uuid: uuid(),
+      })
+      
+      if (items.value.length > MAX_ITEMS) {
+        items.value.shift()
+      }
+    }
+  },
+  {
+    customWsServer: import.meta.env.DEV ? 'ws://localhost:13500/websocket' : undefined,
+  }
+)
+</script>
+
+<template>
+  <TransitionGroup class="container" name="list" tag="div">
+    <div v-for="item in items" :key="item.uuid" class="item">
+      <img v-if="item.avatar" :src="item.avatar" alt="" />
+      <span class="name">{{ item.name }}</span>
+      <span class="content" v-html="item.content"></span>
+    </div>
+  </TransitionGroup>
+</template>
+```
+
+注意：
+- TransitionGroup 的 name="list" 对应 CSS 中的 .list-enter-active 等动画类
+- v-html 用于渲染 getCommentHTML 返回的 HTML（已转义，安全）
+- customWsServer 在开发环境指定本机端口，生产环境自动检测
+
+--- 第 6 步：添加新页面（可选）---
+
+如果开发者需要多个页面（如弹幕页 + 礼物特效页）：
+
+6.1 在 guide.dimsum.json 中添加页面：
+
+```json
+{
+  "pages": [
+    { "name": "弹幕", "path": "?danmu", "width": 1920, "height": 1080 },
+    { "name": "礼物特效", "path": "?gift", "width": 1920, "height": 1080 }
+  ]
+}
+```
+
+6.2 在 App.vue 中添加路由：
+
+```vue
+<template>
+  <DanmuView v-if="danmu" />
+  <GiftEffect v-if="gift" />
+</template>
+
+<script setup lang="ts">
+import DanmuView from './components/DanmuView.vue'
+import GiftEffect from './components/GiftEffect.vue'
+
+const params = new URLSearchParams(window.location.search)
+const danmu = params.has('danmu')
+const gift = params.has('gift')
+</script>
+```
+
+6.3 创建新组件 src/components/GiftEffect.vue。
+
+--- 第 7 步：开发与测试 ---
+
+```bash
+# 启动开发服务器（HMR 热更新）
+pnpm run dev
+# 默认运行在 http://localhost:5173/
+
+# 在浏览器中测试：
+# http://localhost:5173/?danmu
+
+# 如果需要连接主程序 WebSocket：
+# 确保主程序运行在 13500 端口
+# 模板已配置开发环境自动连接 ws://localhost:13500/websocket
+```
+
+--- 第 8 步：构建与打包 ---
+
+```bash
+# 类型检查 + 构建
+pnpm run build
+
+# 仅打包 .ds 文件
+pnpm run dimsum:pack
+
+# 一键构建 + 打包（推荐）
+pnpm run dimsum:build-pack
+```
+
+输出文件：pack/{name}_ver{version}.ds
+
+打包原理（dimsum.pack.js）：
+1. 读取 dist/guide.dimsum.json 中的 name 和 version
+2. 将 dist/ 目录内容压缩为 ZIP（最高压缩级别）
+3. 输出为 .ds 文件
+
+--- 第 9 步：安装测试 ---
+
+1. 打开点心 Chat 主程序
+2. 「我的应用」→ 安装 .ds 文件
+3. 连接直播间
+4. 浏览器打开弹幕页面验证效果
+5. 检查所有页面是否正常
+
+--- 第 10 步：常见问题 ---
+
+构建失败（vue-tsc 报错）
+→ 检查 TypeScript 语法错误
+→ 运行 pnpm install 确保依赖安装完整
+
+开发环境 WebSocket 连不上
+→ 确认主程序在 13500 端口运行
+→ 检查 customWsServer 配置
+
+打包后无法加载
+→ 确认 vite.config.ts 的 base 与 guide.dimsum.json 的 base 一致
+
+样式不生效
+→ 检查 CSS 是否使用 scoped
+→ 清除浏览器缓存
+
+表情/贴纸不显示
+→ 使用 parser.getCommentHTML() 而非 parser.comment
+→ 确认网络可访问 CDN
+
+================================================================
+模式三高级扩展
+================================================================
+
+11.1 国际化（i18n）
+
+在 public/ 目录创建语言文件：
+
+```
+public/
+├── guide.dimsum.json           ← 默认语言
+├── guide.dimsum.zh-CN.json     ← 简体中文
+└── guide.dimsum.ja-JP.json     ← 日语
+```
+
+只需翻译 name、description、pages[].name、pages[].description。
+
+11.2 控制台 + 显示层分离
+
+```json
+{
+  "pages": [
+    {
+      "name": "控制台",
+      "path": "?ctrl",
+      "width": 400,
+      "height": 800,
+      "description": "添加到 OBS 自定义停靠窗口"
+    },
+    {
+      "name": "显示层",
+      "path": "?danmu",
+      "width": 1920,
+      "height": 1080
+    }
+  ]
+}
+```
+
+控制台通过 DimSumChatCallMessageRequest 跨 Widget 通信控制显示层。
+
+11.3 跨 Widget 通信
+
+```javascript
+// 发送消息给另一个 Widget
+// 通过 WebSocket 发送 DimSumChatCallMessageRequest
+// targetNickName 为目标 Widget 的昵称
+```
+
+11.4 CDN 容错加载
+
+```typescript
+// Utils.ts 中提供 loadModule 函数
+export async function loadModule(urls: string[]): Promise<any> {
+  for (const url of urls) {
+    try { return await import(url) } catch {}
+  }
+  throw new Error('All CDN URLs failed')
+}
+
+// 使用：
+const { onMessage } = await loadModule([
+  'https://fastly.jsdelivr.net/npm/dimsum-chat@0/+esm',
+  'https://cdn.jsdelivr.net/npm/dimsum-chat@0/+esm',
+])
+```
+
+注意：Vite dev 模式下动态 import 可能导致卡顿，生产环境可用。
+
+11.5 添加礼物特效
+
+在 onMessage 回调中扩展类型处理：
+
+```typescript
+onMessage((_msg, parser) => {
+  switch (parser.type) {
+    case 'comment': /* 弹幕处理 */ break
+    case 'gift':
+      // 触发礼物特效动画
+      triggerGiftAnimation(parser.giftName, parser.giftNum, parser.giftImage)
+      break
+    case 'like':
+      // 触发点赞特效
+      triggerLikeEffect()
+      break
+  }
+})
+```
+
+================================================================
+AI Agent 特别提醒
+================================================================
+
+使用模式三时，AI Agent 需要注意：
+
+1. 不要替开发者做环境安装决策——让开发者自己执行 npm/pnpm 命令
+2. 修改任何模板文件前必须先读取原始内容
+3. 四个必改文件（vite.config.ts / guide.dimsum.json / package.json / index.html）一个都不能漏
+4. base 路径一致性是最常见的错误来源——务必三次确认
+5. 建议开发者先用 pnpm run dev 验证，再执行 build+pack
+6. 如果开发者需要 TypeScript 类型提示，确保安装了 dimsum-chat 的 npm 包（pnpm add dimsum-chat）

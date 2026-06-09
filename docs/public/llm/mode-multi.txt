@@ -1,0 +1,525 @@
+# 模式二：HTML+JS+CSS 模式 — 完整工作流
+# 版本：1.0.0 | 更新日期：2026-06-09
+# 适用：有基础前端知识的开发者
+# 产物：index.html + style.css + app.js + guide.dimsum.json
+# 耗时：约 30 分钟 - 2 小时
+
+================================================================
+模式二概述
+================================================================
+
+本模式适用于有一定前端基础的开发者。相比模式一：
+- 代码分离为 HTML/CSS/JS 三个文件，结构清晰
+- 可以使用模块化的 JavaScript
+- 便于维护和修改样式
+- 可以添加多个独立的功能模块
+
+限制：
+- 没有构建工具，不支持 npm 包（SDK 仍通过 CDN 引入）
+- 不提供组件化能力
+- 如果项目变复杂，建议升级到模式三
+
+================================================================
+完整工作流（AI Agent 必须逐步执行）
+================================================================
+
+--- 第 1 步：确定项目结构 ---
+
+AI Agent：帮开发者确定项目名称和文件结构。
+
+推荐结构：
+
+```
+your-widget-name/
+├── guide.dimsum.json
+├── index.html
+├── css/
+│   └── style.css
+├── js/
+│   ├── app.js          ← 主入口
+│   ├── danmaku.js      ← 弹幕处理模块
+│   └── utils.js        ← 工具函数
+└── assets/
+    └── (图片等资源)
+```
+
+--- 第 2 步：了解需求 ---
+
+AI Agent：确认以下信息：
+
+1. 需要显示哪些消息类型？
+2. 需要哪些视觉效果？（如入场动画、礼物特效）
+3. 是否需要多个页面？（弹幕页 + 礼物页 + 控制台等）
+4. 对性能有什么要求？（如同时显示多少条弹幕）
+
+--- 第 3 步：生成 guide.dimsum.json ---
+
+根据需求生成配置文件。如果是多页面：
+
+```json
+{
+  "name": "应用显示名称",
+  "version": "1.0.0",
+  "base": "/your-widget-name/",
+  "description": "简要描述",
+  "pages": [
+    {
+      "name": "弹幕显示",
+      "path": "index.html?mode=danmaku",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "name": "礼物特效",
+      "path": "index.html?mode=gift",
+      "width": 1920,
+      "height": 1080
+    }
+  ]
+}
+```
+
+--- 第 4 步：生成 index.html ---
+
+AI Agent：生成入口 HTML 文件。
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="referrer" content="no-referrer" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>应用名称</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import { onMessage } from 'https://fastly.jsdelivr.net/npm/dimsum-chat@0/+esm'
+    import { DanmakuManager } from './js/danmaku.js'
+
+    // URL 参数路由
+    const params = new URLSearchParams(window.location.search)
+    const mode = params.get('mode') || 'danmaku'
+
+    // 初始化弹幕管理器
+    const container = document.getElementById('app')
+    const manager = new DanmakuManager(container)
+
+    // 监听消息
+    onMessage((msg, parser) => {
+      try {
+        manager.handleMessage(parser)
+      } catch (e) {
+        console.error('消息处理出错：', e)
+      }
+    })
+  </script>
+</body>
+</html>
+```
+
+--- 第 5 步：生成 CSS 文件 ---
+
+AI Agent：生成 css/style.css。
+
+```css
+/* ===== 全局重置 ===== */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ===== 页面背景（透明，用于 OBS 叠加） ===== */
+body {
+  background: transparent;
+  font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  color: #fff;
+}
+
+/* ===== 弹幕容器 ===== */
+#app {
+  position: fixed;
+  inset: 0;
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+/* ===== 单条弹幕项 ===== */
+.danmaku-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px;
+  margin-bottom: 6px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  border-radius: 28px;
+  font-size: 22px;
+  line-height: 1.5;
+  max-width: 90%;
+  animation: slideUp 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition: opacity 0.3s ease;
+}
+
+.danmaku-item.fade-out {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* ===== 头像 ===== */
+.danmaku-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+/* ===== 用户名 ===== */
+.danmaku-username {
+  color: #ffd700;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+/* ===== 内容 ===== */
+.danmaku-content {
+  color: #fff;
+  word-break: break-all;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.danmaku-content img {
+  height: 32px;
+  vertical-align: middle;
+  margin: 0 3px;
+}
+
+/* ===== 消息类型变体 ===== */
+.danmaku-item.type-gift {
+  background: rgba(255, 80, 120, 0.6);
+  border: 2px solid rgba(255, 150, 180, 0.5);
+}
+
+.danmaku-item.type-like {
+  background: rgba(255, 100, 100, 0.45);
+}
+
+.danmaku-item.type-follow {
+  background: rgba(100, 200, 255, 0.45);
+}
+
+.danmaku-item.type-enter {
+  background: rgba(150, 150, 150, 0.35);
+  font-size: 18px;
+}
+
+/* ===== 礼物图标 ===== */
+.gift-icon {
+  width: 36px;
+  height: 36px;
+  vertical-align: middle;
+  margin: 0 4px;
+}
+
+/* ===== 入场动画 ===== */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+```
+
+--- 第 6 步：生成 JS 模块 ---
+
+AI Agent：生成以下 JavaScript 文件。
+
+js/utils.js：
+
+```javascript
+/**
+ * HTML 转义（XSS 防护）
+ */
+export function escapeHtml(text) {
+  if (!text) return ''
+  const div = document.createElement('div')
+  div.textContent = String(text)
+  return div.innerHTML
+}
+
+/**
+ * 生成唯一 ID
+ */
+export function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2)
+}
+
+/**
+ * 移除 DOM 元素（带淡出动画）
+ */
+export function removeWithFade(el, delay = 300) {
+  el.classList.add('fade-out')
+  setTimeout(() => el.remove(), delay)
+}
+```
+
+js/danmaku.js：
+
+```javascript
+import { getBfaceURL, Parser } from 'https://fastly.jsdelivr.net/npm/dimsum-chat@0/+esm'
+import { escapeHtml, uid, removeWithFade } from './utils.js'
+
+export class DanmakuManager {
+  constructor(container, options = {}) {
+    this.container = container
+    this.maxItems = options.maxItems || 30
+    this.autoRemove = options.autoRemove !== false
+    this.autoRemoveDelay = options.autoRemoveDelay || 8000
+  }
+
+  /**
+   * 处理一条消息
+   */
+  handleMessage(parser) {
+    const item = this.createItem(parser)
+    if (item) {
+      this.addItem(item)
+    }
+  }
+
+  /**
+   * 根据消息类型创建 DOM 元素
+   */
+  createItem(parser) {
+    const div = document.createElement('div')
+    div.className = `danmaku-item type-${parser.type}`
+    div.dataset.id = uid()
+
+    switch (parser.type) {
+      case 'comment':
+        this.buildComment(div, parser)
+        break
+      case 'gift':
+        this.buildGift(div, parser)
+        break
+      case 'like':
+        this.buildSimple(div, parser, '点赞了')
+        break
+      case 'follow':
+        this.buildSimple(div, parser, '关注了主播')
+        break
+      case 'enter':
+        this.buildSimple(div, parser, '进入了直播间')
+        break
+      case 'guard':
+        this.buildSimple(div, parser, '开通了舰长')
+        break
+      case 'superchat':
+        this.buildSuperChat(div, parser)
+        break
+      default:
+        return null
+    }
+
+    return div
+  }
+
+  /**
+   * 构建弹幕消息
+   */
+  buildComment(div, parser) {
+    // 头像
+    const avatar = parser.avatar ||
+      (parser.platform === 'bilibili' && parser.uid ? getBfaceURL(parser.uid) : null)
+    if (avatar) {
+      const img = document.createElement('img')
+      img.className = 'danmaku-avatar'
+      img.src = avatar
+      img.alt = ''
+      img.onerror = () => img.remove()
+      div.appendChild(img)
+    }
+
+    // 用户名
+    const nameSpan = document.createElement('span')
+    nameSpan.className = 'danmaku-username'
+    nameSpan.textContent = parser.userName || '神秘用户'
+    div.appendChild(nameSpan)
+
+    // 弹幕内容（含表情）
+    const contentSpan = document.createElement('span')
+    contentSpan.className = 'danmaku-content'
+    contentSpan.innerHTML = parser.getCommentHTML({
+      stickerStyle: 'height:60px;margin:3px;',
+      emotStyle: 'height:32px;vertical-align:middle;margin:0 3px;',
+    }) || ''
+    div.appendChild(contentSpan)
+  }
+
+  /**
+   * 构建礼物消息
+   */
+  buildGift(div, parser) {
+    // 头像
+    const avatar = parser.avatar ||
+      (parser.platform === 'bilibili' && parser.uid ? getBfaceURL(parser.uid) : null)
+    if (avatar) {
+      const img = document.createElement('img')
+      img.className = 'danmaku-avatar'
+      img.src = avatar
+      img.alt = ''
+      img.onerror = () => img.remove()
+      div.appendChild(img)
+    }
+
+    // 用户名
+    const nameSpan = document.createElement('span')
+    nameSpan.className = 'danmaku-username'
+    nameSpan.textContent = parser.userName || '神秘用户'
+    div.appendChild(nameSpan)
+
+    // 礼物内容
+    const contentSpan = document.createElement('span')
+    contentSpan.className = 'danmaku-content'
+    
+    let giftText = '赠送了 '
+    if (parser.giftImage) {
+      giftText += `<img class="gift-icon" src="${escapeHtml(parser.giftImage)}" alt="" />`
+    }
+    giftText += escapeHtml(parser.giftName || '礼物')
+    giftText += ` x${parser.giftNum || 1}`
+    // 注意：连击已由 SDK 内部去重处理，giftNum 为增量值
+    
+    contentSpan.innerHTML = giftText
+    div.appendChild(contentSpan)
+  }
+
+  /**
+   * 构建简单消息（点赞/关注/入场）
+   */
+  buildSimple(div, parser, action) {
+    const nameSpan = document.createElement('span')
+    nameSpan.className = 'danmaku-username'
+    nameSpan.textContent = parser.userName || '神秘用户'
+    div.appendChild(nameSpan)
+
+    const actionSpan = document.createElement('span')
+    actionSpan.className = 'danmaku-content'
+    actionSpan.textContent = action
+    div.appendChild(actionSpan)
+  }
+
+  /**
+   * 构建醒目留言
+   */
+  buildSuperChat(div, parser) {
+    const nameSpan = document.createElement('span')
+    nameSpan.className = 'danmaku-username'
+    nameSpan.textContent = parser.userName || '神秘用户'
+    div.appendChild(nameSpan)
+
+    const contentSpan = document.createElement('span')
+    contentSpan.className = 'danmaku-content'
+    contentSpan.textContent = `(SC ¥${parser.giftPrice || '?'}) ${parser.comment || ''}`
+    div.appendChild(contentSpan)
+  }
+
+  /**
+   * 添加弹幕项到容器
+   */
+  addItem(item) {
+    this.container.appendChild(item)
+
+    // 超出数量限制时移除最早的
+    while (this.container.children.length > this.maxItems) {
+      removeWithFade(this.container.firstChild)
+    }
+
+    // 自动移除
+    if (this.autoRemove) {
+      setTimeout(() => {
+        if (item.isConnected) {
+          removeWithFade(item)
+        }
+      }, this.autoRemoveDelay)
+    }
+  }
+}
+```
+
+--- 第 7 步：指导开发者创建文件 ---
+
+AI Agent：按以下步骤指导开发者：
+
+1. 在 Widgets 目录下创建以应用名称命名的文件夹
+   路径：%AppData%/MiegoLive/DimSumChat/Widgets/your-widget-name/
+
+2. 在该文件夹中创建以下目录结构：
+   - css/ 目录
+   - js/ 目录
+
+3. 依次创建所有文件：
+   - guide.dimsum.json（根目录）
+   - index.html（根目录）
+   - css/style.css
+   - js/utils.js
+   - js/danmaku.js
+
+--- 第 8 步：测试与调试 ---
+
+AI Agent：告诉开发者如何测试：
+
+1. 打开点心 Chat 主程序
+2. 连接一个直播间
+3. 浏览器访问：http://localhost:13500/your-widget-name/index.html
+4. 按 F12 查看控制台是否有错误
+
+调试技巧：
+- 在 danmaku.js 的 handleMessage 中加入 console.log 查看消息
+- 检查 Network 标签的 WS 过滤器查看 WebSocket 连接
+- 样式问题在 Elements 标签中实时修改 CSS 测试
+
+================================================================
+模式二扩展方向
+================================================================
+
+完成基础模板后，可以按以下方向扩展：
+
+1. 添加新消息类型
+   → 在 DanmakuManager.createItem 的 switch 中添加新 case
+   → 实现对应的 build 方法
+
+2. 添加多页面支持
+   → 在 index.html 中读取 URL 参数
+   → 根据参数初始化不同的管理器
+
+3. 添加设置面板
+   → 创建 settings.html，通过 URL 参数切换
+   → 使用 localStorage 持久化设置
+
+4. 添加音效
+   → 使用 Web Audio API
+   → 在特定消息类型触发时播放
+
+5. 优化性能
+   → 使用 requestAnimationFrame 批量更新 DOM
+   → 使用 DocumentFragment 减少重排

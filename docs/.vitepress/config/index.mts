@@ -20,5 +20,18 @@ export default defineConfig({
     ssr: {
       noExternal: ['vuetify']
     },
+    plugins: [
+      {
+        name: 'txt-utf8-charset',
+        configureServer(server) {
+          server.middlewares.use((req, res, next) => {
+            if (req.url?.endsWith('.txt')) {
+              res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+            }
+            next()
+          })
+        },
+      },
+    ],
   }
 })
