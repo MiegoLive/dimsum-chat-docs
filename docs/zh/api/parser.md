@@ -1,3 +1,12 @@
+<!--
+  MAINTAINER: 修改 Parser 属性列表时，必须同步更新 docs/public/llm/parser-types.txt。
+  parser-types.txt 是 AI Agent 使用的权威类型声明，属性名/类型/平台可用性必须与本文一致。
+  两文件维护约定：
+  1. SDK 源码变更 → 先更新 parser-types.txt（逐字段对照源码）
+  2. 再更新本文（补充用法示例和详细说明）
+  3. 两文件加/删属性时必须互相核对
+-->
+
 # 消息解析器
 
 ## new Parser()
@@ -36,11 +45,17 @@
   })
   ```
 
+---
+
 ## parser.rawType
 
 原始消息类型。
 
-- **类型** `string` 
+- **类型** `string`
+
+- **支持平台** 全平台
+
+---
 
 ## parser.rawContent
 
@@ -52,13 +67,21 @@
 因此，当您需要使用原始消息的内容时，无需再次对其反序列化。
 :::
 
-- **类型** `any` 
+- **类型** `any`
+
+- **支持平台** 全平台
+
+---
 
 ## parser.platform
 
 消息所属直播平台。
 
-- **类型** `'acfun' | 'openblive' | 'bilibili' | 'douyin' | 'kuaishou' | 'chzzk' | undefined` 
+- **类型** `'acfun' | 'openblive' | 'bilibili' | 'douyin' | 'kuaishou' | 'chzzk' | undefined`
+
+- **支持平台** 全平台
+
+---
 
 ## parser.type
 
@@ -67,7 +90,7 @@
 - **类型**
 
   ```ts
-  type MessageType = 'comment' | 'gift' | 'follow' | 'joinclub' | 'like' | 
+  type MessageType = 'comment' | 'gift' | 'follow' | 'joinclub' | 'like' |
                     'guard' | 'superchat' | 'enter' | 'share' | undefined;
   ```
 
@@ -75,17 +98,49 @@
 
   `guard` 与 `superchat` 类型的消息原本为 `bilibili` 与 `openblive` 平台的消息。出于兼容性考虑，Chzzk 平台的 Donation 事件被归类为 `superchat` 类型，Subscription 事件被归类为 `guard` 类型。Subscription 事件的 Tier 1 与 Tier 2 分别被映射为 `guardLevel` 属性的 `3` 与 `2` 值。
 
+- **支持平台** 全平台
+
+---
+
 ## parser.userName
 
 用户名。
 
 - **类型** `string | undefined`
 
+- **支持平台** 全平台
+
+---
+
 ## parser.uid
 
-用户ID。对于 Chzzk 平台可能返回 `"anonymous"`。
+用户 ID。对于 Chzzk 平台可能返回 `"anonymous"`。
 
 - **类型** `number | string | undefined`
+
+- **支持平台** 全平台
+
+---
+
+## parser.avatar
+
+用户头像 URL。
+
+::: tip B 站头像跨域问题
+B 站头像 URL 存在跨域限制，建议配合 `getBfaceURL()` 使用：
+
+```js
+const avatar = parser.platform === 'bilibili' && parser.uid
+  ? getBfaceURL(parser.uid)
+  : parser.avatar
+```
+:::
+
+- **类型** `string | undefined`
+
+- **支持平台** bilibili、openblive、acfun、douyin、kuaishou
+
+---
 
 ## parser.clubLevel
 
@@ -93,17 +148,29 @@
 
 - **类型** `number | undefined`
 
+- **支持平台** bilibili、openblive、acfun、douyin
+
+---
+
 ## parser.clubName
 
 粉丝团/守护团名称。
 
 - **类型** `string | undefined`
 
+- **支持平台** bilibili、openblive、acfun、douyin
+
+---
+
 ## parser.acfunClubUid
 
 Acfun 守护团所属主播的用户 ID。
 
 - **类型** `number | undefined`
+
+- **支持平台** acfun
+
+---
 
 ## parser.douyinSubscribe
 
@@ -115,23 +182,32 @@ Acfun 守护团所属主播的用户 ID。
 
   `0` 为非会员，`1` 为月费会员，`2` 为年费会员。
 
-## parser.avatar
+- **支持平台** douyin
 
-用户头像 URL。
-
-- **类型** `string | undefined`
+---
 
 ## parser.comment
 
 弹幕聊天内容。
 
+::: tip
+当 `parser.type` 为 `comment` 或 `superchat` 时，此属性均有值。
+对于 `superchat` 消息，`comment` 与 `superChatComment` 返回相同内容。
+:::
+
 - **类型** `string | undefined`
+
+- **支持平台** 全平台（仅在 `type=comment` 或 `type=superchat` 时有值）
+
+---
 
 ## parser.getCommentHTML()
 
 简单地将评论构造为 HTML 字符串。这在一般情况下构造评论消息的渲染内容时很有用。
 
-- **类型** 
+返回的 HTML 已做 XSS 安全转义，可以直接设置到 `innerHTML`。
+
+- **类型**
 
   ```ts
   class Parser {
@@ -184,10 +260,12 @@ Acfun 守护团所属主播的用户 ID。
   </div>
   ```
 
+- **支持平台** 全平台（仅在 `type=comment` 时有值）
+
 
 ## parser.CommentBuilder()
 
-自定义评论内容构建器。
+自定义评论内容构建器。相比 `getCommentHTML()` 提供更灵活的控制。
 
 - **类型**
 
@@ -235,6 +313,10 @@ const comment = parser.CommentBuilder((comment, stickerUrl, emots) => {
 });
 ```
 
+- **支持平台** 全平台（仅在 `type=comment` 时有值）
+
+---
+
 ## parser.guardLevel
 
 大航海等级 / 大航海购买等级。
@@ -245,11 +327,23 @@ const comment = parser.CommentBuilder((comment, stickerUrl, emots) => {
 
   `0` 为路人，`3` 为舰长，`2` 为提督，`1` 为总督。
 
+  当 `type` 为 `guard` 时，表示本次购买的大航海等级；其它消息类型中表示该用户当前的大航海等级。
+
+  Chzzk 平台的 Subscription 事件也支持此属性，Tier 1 映射为 `3`（舰长），Tier 2 映射为 `2`（提督），非订阅用户返回 `0`。
+
+- **支持平台** bilibili、openblive、chzzk
+
+---
+
 ## parser.guardNum
 
-大航海购买数量。
+大航海购买数量。B 站表示购买月数，Chzzk 表示订阅月数。
 
 - **类型** `number | undefined`
+
+- **支持平台** bilibili、openblive、chzzk
+
+---
 
 ## parser.guardPrice
 
@@ -257,17 +351,29 @@ const comment = parser.CommentBuilder((comment, stickerUrl, emots) => {
 
 - **类型** `number | undefined`
 
+- **支持平台** bilibili、openblive
+
+---
+
 ## parser.chzzkTier
 
-1 级或 2 级的 Chzzk 订阅等级。
+Chzzk 订阅等级（1–3）。
 
 - **类型** `number | undefined`
+
+- **支持平台** chzzk
+
+---
 
 ## parser.chzzkTierMonth
 
-1 级或 2 级的 Chzzk 月费订阅数量。
+Chzzk 订阅月数。
 
 - **类型** `number | undefined`
+
+- **支持平台** chzzk
+
+---
 
 ## parser.giftName
 
@@ -275,23 +381,39 @@ const comment = parser.CommentBuilder((comment, stickerUrl, emots) => {
 
 - **类型** `string | undefined`
 
+- **支持平台** acfun、bilibili、openblive、douyin、kuaishou（仅在 `type=gift` 时有值）
+
+---
+
 ## parser.giftNum
 
-礼物数量。
+礼物数量。抖音和快手已由 SDK 内部处理连击去重，每次返回增量值，开发者无需额外处理。
 
 - **类型** `number | undefined`
+
+- **支持平台** acfun、bilibili、openblive、douyin、kuaishou（仅在 `type=gift` 时有值）
+
+---
 
 ## parser.giftUnitPrice
 
-单个礼物价格（CNY）。
+单个礼物价格（CNY）。免费礼物（如 B 站银瓜子）返回 `0`。
 
 - **类型** `number | undefined`
+
+- **支持平台** acfun、bilibili、openblive、douyin、kuaishou（仅在 `type=gift` 时有值）
+
+---
 
 ## parser.giftTotalPrice
 
-礼物总价值（CNY）。
+礼物总价值（CNY）。等价于 `giftNum * giftUnitPrice`。
 
 - **类型** `number | undefined`
+
+- **支持平台** 全平台（依赖 `giftNum` 与 `giftUnitPrice` 均有值时返回）
+
+---
 
 ## parser.giftImage
 
@@ -299,23 +421,46 @@ const comment = parser.CommentBuilder((comment, stickerUrl, emots) => {
 
 - **类型** `string | undefined`
 
+- **支持平台** acfun、bilibili、openblive、douyin、kuaishou（仅在 `type=gift` 时有值）
+
+---
+
 ## parser.superChatComment
 
-超级聊天评论。
+超级聊天评论内容。
 
 - **类型** `string | undefined`
 
+- **支持平台** bilibili、openblive、chzzk（仅在 `type=superchat` 时有值）
+
+---
+
 ## parser.superChatPrice
 
-超级聊天价格。
+超级聊天价格。B 站与 OpenBLive 为人民币（元），Chzzk 为韩元（KRW）。
 
 - **类型** `number | undefined`
+
+- **支持平台** bilibili、openblive、chzzk（仅在 `type=superchat` 时有值）
+
+---
 
 ## parser.price
 
-广义价格，可能为礼物、大航海、超级聊天的价格。
+广义价格，根据消息类型自动选择对应的价格属性：
+
+| 消息类型     | 对应属性            |
+|------------|-------------------|
+| `gift`     | `giftTotalPrice`  |
+| `superchat`| `superChatPrice`  |
+| `guard`    | `guardPrice`      |
+| 其它       | `undefined`       |
 
 - **类型** `number | undefined`
+
+- **支持平台** 全平台
+
+---
 
 ## parser.getAbstractLevel()
 
@@ -330,6 +475,7 @@ const comment = parser.CommentBuilder((comment, stickerUrl, emots) => {
 
   interface abstractLevelOptions {
     douyinSteps?: number[]
+    kuaishouSteps?: number[]
     acfunSteps?: number[]
     acfunClubUid?: number
   }
@@ -337,10 +483,46 @@ const comment = parser.CommentBuilder((comment, stickerUrl, emots) => {
 
 - **详细信息**
 
-  `douyinSteps` `acfunSteps` 默认值为 `[7, 11, 15]`。
-  
-  以默认值为例，当 `this.clubLevel <= 7` 时，返回值为 `0`。当 `this.clubLevel <= 11` 时，返回值为 `1`。以此类推，当 `this.clubLevel > 15` 时，返回值为 `3`。
+  `douyinSteps`、`kuaishouSteps`、`acfunSteps` 默认值均为 `[7, 11, 15]`。
 
-  若设置了 `acfunClubUid` 的数值，则当且仅当 `this.acfunClubUid === acfunClubUid` 才会返回大于 0 的数值。
+  以默认值为例，当 `clubLevel <= 7` 时返回 `0`，`<= 11` 返回 `1`，`<= 15` 返回 `2`，`> 15` 返回 `3`。
 
-  B站与B站开放平台消息将根据大航海等级计算：`0-无 1-舰长 2-提督 3-总督`。请注意，这与 `this.guardLevel` 是不一致的。
+  各平台的映射规则：
+
+  | 平台        | 映射方式                                                   |
+  |-----------|---------------------------------------------------------|
+  | douyin    | 根据 `clubLevel` 和 `douyinSteps` 分段映射为 0–3          |
+  | kuaishou  | 根据 `clubLevel` 和 `kuaishouSteps` 分段映射为 0–3        |
+  | acfun     | 根据 `clubLevel` 和 `acfunSteps` 分段映射为 0–3；<br>若设置了 `acfunClubUid`，只有当 `acfunClubUid === 目标主播 UID` 时才返回 >0 的值 |
+  | bilibili / openblive | 根据 `guardLevel` 转换为 0–3（总督→3、提督→2、舰长→1、无→0） |
+  | chzzk     | 直接使用 `chzzkTier` 的值                                  |
+
+  ::: warning
+  B 站与 OpenBLive 的返回值为总督=3、提督=2、舰长=1、无=0，这与 `guardLevel` 的数值关系（总督=1、提督=2、舰长=3、无=0）是**相反**的，请留意区分。
+  :::
+
+---
+
+## 消息类型与属性速查
+
+下表列出了各消息类型下**有值**的核心属性。未列出的属性在该类型下可能返回 `undefined`，需做空值检查。
+
+| 属性              | comment | gift | guard | superchat | like | follow | enter |
+|------------------|:-------:|:----:|:-----:|:---------:|:----:|:------:|:-----:|
+| `userName`       | ✔       | ✔    | ✔     | ✔         | ✔    | ✔      | ✔     |
+| `uid`            | ✔       | ✔    | ✔     | ✔         | ✔    | ✔      | ✔     |
+| `avatar`         | ✔       | ✔    | —     | —         | —    | —      | —     |
+| `comment`        | ✔       | —    | —     | ✔         | —    | —      | —     |
+| `giftName`       | —       | ✔    | —     | —         | —    | —      | —     |
+| `giftNum`        | —       | ✔    | —     | —         | —    | —      | —     |
+| `giftImage`      | —       | ✔    | —     | —         | —    | —      | —     |
+| `giftUnitPrice`  | —       | ✔    | —     | —         | —    | —      | —     |
+| `giftTotalPrice` | —       | ✔    | —     | —         | —    | —      | —     |
+| `guardLevel`     | ✔       | —    | ✔     | —         | —    | —      | —     |
+| `guardNum`       | —       | —    | ✔     | —         | —    | —      | —     |
+| `guardPrice`     | —       | —    | ✔     | —         | —    | —      | —     |
+| `superChatComment`| —      | —    | —     | ✔         | —    | —      | —     |
+| `superChatPrice` | —       | —    | —     | ✔         | —    | —      | —     |
+| `price`          | —       | ✔    | ✔     | ✔         | —    | —      | —     |
+| `clubLevel`      | ✔       | —    | —     | ✔         | —    | —      | —     |
+| `clubName`       | ✔       | —    | —     | ✔         | —    | —      | —     |
