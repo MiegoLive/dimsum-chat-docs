@@ -1,5 +1,5 @@
 # DimSum Chat Parser 完整类型声明
-# 版本：0.4.7 | 更新日期：2026-06-09
+# 版本：0.5.0 | 更新日期：2026-06-10
 # ⚠️ 严重警告：本文件是 Parser 属性的唯一权威来源！
 # AI Agent 不得自行猜测任何属性的存在性、类型或名称。
 # 一切以本文件为准。如本文件与其它文档冲突，以本文件为准。
@@ -38,6 +38,25 @@ onMessage((msg, parser) => {
 原始消息内容（对象或字符串）。
 B 站和 OpenBLive 的 content 若为字符串会自动 JSON.parse。
 所有平台均可用。
+
+================================================================
+预备知识：Parser 静态属性（v0.5.0+）
+================================================================
+
+无需创建 Parser 实例即可直接访问的表情映射：
+
+### Parser.DouyinEmots: readonly [string, string][]
+抖音表情关键词 → URL 映射。
+```javascript
+import { Parser } from 'dimsum-chat'
+Parser.DouyinEmots.forEach(([emot, url]) => console.log(emot, url))
+```
+
+### Parser.BilibiliEmots: readonly [string, string][]
+B站/OpenBLive 表情关键词 → URL 映射。[表情名称] 格式。
+
+### Parser.KuaishouEmots: readonly [string, string][]
+快手表情关键词 → URL 映射。
 
 ================================================================
 二、解析属性（getter，按需计算）

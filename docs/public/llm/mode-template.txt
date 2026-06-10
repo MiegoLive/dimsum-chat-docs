@@ -335,13 +335,39 @@ public/
 ```
 
 控制台通过 DimSumChatCallMessageRequest 跨 Widget 通信控制显示层。
-
-11.3 跨 Widget 通信
+完整的跨组件通信指南（含配置、发送、接收代码）请查阅 shared.txt 第九节。
+以下仅为快速示例：
 
 ```javascript
-// 发送消息给另一个 Widget
-// 通过 WebSocket 发送 DimSumChatCallMessageRequest
-// targetNickName 为目标 Widget 的昵称
+// === 控制台端 ===
+import { WebSocketManager, onMessage } from 'dimsum-chat'
+
+onMessage((msg, parser) => {
+  if (msg.type === 'DimSumChatCallMessageRequest') {
+    console.log('收到回复:', msg.content.requestData)
+  }
+}, { widgetNickName: '控制台' })
+
+function sendToDisplay(action, params = {}) {
+  WebSocketManager.getInstance().send({
+    type: 'DimSumChatCallMessageRequest',
+    content: { targetNickName: '显示层', requestData: { action, params } }
+  })
+}
+
+// === 显示层端（另一个 HTML 页面）===
+import { onMessage } from 'dimsum-chat'
+
+onMessage((msg, parser) => {
+  // 接收来自控制台的指令
+  if (msg.type === 'DimSumChatCallMessageRequest') {
+    const { action, params } = msg.content.requestData
+    switch (action) {
+      case 'showDanmaku': /* 处理 */ break
+      case 'toggleVisibility': /* 处理 */ break
+    }
+  }
+}, { widgetNickName: '显示层' })
 ```
 
 11.4 CDN 容错加载

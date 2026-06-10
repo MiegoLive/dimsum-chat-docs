@@ -1,5 +1,5 @@
 # DimSum Chat 核心共享知识
-# 版本：1.0.0 | 更新日期：2026-06-09
+# 版本：1.2.0 | 更新日期：2026-06-10
 # 本文件为 AI Agent 提供开发点心应用所需的核心技术知识
 # 详细内容请参阅知识库：E:\个人项目\糕\知识库\
 
@@ -86,7 +86,15 @@ onMessage((msg, parser) => {
 
 - 自动连接 WebSocket（无需手动管理连接）
 - 自动响应 DimSumChatWidgetInfoResponse（无需手动处理）
-- 可选参数：{ customWsServer: 'ws://localhost:13500/websocket' }
+- 可选参数：
+  - `customWsServer`: 自定义 WebSocket 服务器地址（开发调试用）
+  - `widgetNickName` (v0.5.0+): Widget 昵称，用于跨组件通信时标识自身
+
+```javascript
+onMessage((msg, parser) => { /* ... */ }, {
+  widgetNickName: '我的弹幕组件'
+})
+```
 
 4.3 Parser — 消息解析器核心属性
 
@@ -135,6 +143,19 @@ element.innerHTML = html  // 安全，已转义
 const avatar = parser.platform === 'bilibili' && parser.uid
   ? getBfaceURL(parser.uid)
   : parser.avatar  // 注意：属性名是 avatar，不是 userAvatar！
+```
+
+4.6 Parser 静态表情映射（v0.5.0+）
+
+无需创建 Parser 实例即可访问各平台表情映射：
+
+```javascript
+import { Parser } from 'dimsum-chat'
+
+// 遍历所有表情关键词→URL
+Parser.BilibiliEmots.forEach(([emot, url]) => console.log(emot, url))
+Parser.DouyinEmots.forEach(([emot, url]) => console.log(emot, url))
+Parser.KuaishouEmots.forEach(([emot, url]) => console.log(emot, url))
 ```
 
 ================================================================
@@ -230,6 +251,149 @@ onMessage((msg, parser) => {
 用户安装：主程序 → 「我的应用」→ 安装 .ds 文件
 
 ================================================================
+九、跨组件通信（v0.5.0+）
+================================================================
+
+9.1 概述
+
+DimSumChatCallMessageRequest 允许在同一主程序内运行的不同 Widget 之间通信。
+例如：一个「控制台」页面向「显示层」页面发送指令。
+
+数据流向：Widget A → WebSocket → 主程序服务器 → WebSocket → Widget B
+
+服务器根据 targetNickName 进行消息路由。
+Widget 在连接握手时通过 widgetNickName 注册自己的标识。
+
+9.2 设置 Widget 昵称
+
+方式一：onMessage 选项（推荐）
+
+```javascript
+import { onMessage } from 'dimsum-chat'
+
+onMessage((msg, parser) => {
+  // 处理消息
+}, {
+  widgetNickName: '我的弹幕组件'  // ← 注册昵称
+})
+```
+
+方式二：运行时动态设置
+
+```javascript
+import { WebSocketManager } from 'dimsum-chat'
+const manager = WebSocketManager.getInstance()
+manager.widgetNickName = '我的弹幕组件'
+```
+
+9.3 发送跨组件消息
+
+通过 `WebSocketManager.send()` 发送 DimSumChatCallMessageRequest（v0.5.1+）：
+
+```javascript
+import { WebSocketManager } from 'dimsum-chat'
+
+/**
+ * 发送跨组件消息
+ * @param targetNickName - 目标 Widget 的昵称
+ * @param action - 操作名称
+ * @param params - 可选参数对象
+ */
+function sendToWidget(targetNickName, action, params = {}) {
+  const ws = WebSocketManager.getInstance()
+  const success = ws.send({
+    type: 'DimSumChatCallMessageRequest',
+    content: {
+      targetNickName,
+      requestData: { action, params }
+    }
+  })
+  if (!success) {
+    console.warn('WebSocket 未连接，无法发送消息')
+  }
+}
+```
+
+> `send()` 方法内部自动执行 JSON.stringify，连接未就绪时静默失败不抛异常。返回 true 表示成功，false 表示连接未就绪。
+
+9.4 接收跨组件消息
+
+所有 Widget 收到的 WebSocket 消息都会经过 onMessage 回调。
+跨组件消息会以如下格式到达：
+
+```javascript
+onMessage((msg, parser) => {
+  if (msg.type === 'DimSumChatCallMessageRequest') {
+    const { requestData } = msg.content
+    // requestData.action — 操作名称
+    // requestData.params  — 参数对象
+    
+    switch (requestData.action) {
+      case 'showDanmaku':
+        showDanmakuEffect(requestData.params)
+        break
+      case 'updateConfig':
+        updateConfig(requestData.params)
+        break
+    }
+  }
+})
+```
+
+注意：`originationNickName` 字段由服务器在转发时自动替换，接收方收到的 content 中的 targetNickName 会被替换为 originationNickName（即发件方的昵称）。
+
+9.5 控制台 + 显示层分离架构示例
+
+guide.dimsum.json：
+```json
+{
+  "name": "我的应用",
+  "base": "/my-app/",
+  "pages": [
+    { "name": "控制台", "path": "index.html?mode=ctrl", "width": 400, "height": 600 },
+    { "name": "显示层", "path": "index.html?mode=display", "width": 1920, "height": 1080 }
+  ]
+}
+```
+
+控制台端（mode=ctrl）：
+```javascript
+import { onMessage } from 'dimsum-chat'
+
+onMessage((msg, parser) => { /* ... */ }, {
+  widgetNickName: '控制台'
+})
+
+// 点击按钮时发送指令给显示层
+document.getElementById('hide-btn').onclick = () => {
+  WebSocketManager.getInstance().send({
+    type: 'DimSumChatCallMessageRequest',
+    content: {
+      targetNickName: '显示层',
+      requestData: { action: 'toggleVisibility', params: {} }
+    }
+  })
+}
+```
+
+显示层端（mode=display）：
+```javascript
+import { onMessage } from 'dimsum-chat'
+
+onMessage((msg, parser) => {
+  if (msg.type === 'DimSumChatCallMessageRequest') {
+    const { action } = msg.content.requestData
+    if (action === 'toggleVisibility') {
+      document.body.style.display =
+        document.body.style.display === 'none' ? '' : 'none'
+    }
+  }
+}, {
+  widgetNickName: '显示层'
+})
+```
+
+================================================================
 九、常用键值速查
 ================================================================
 
@@ -240,4 +404,4 @@ SDK CDN（国内）：https://fastly.jsdelivr.net/npm/dimsum-chat@0/+esm
 打包后缀：.ds
 Widget 访问 URL 格式：http://localhost:13500/{base}/index.html
 npm 包名：dimsum-chat
-npm 版本：0.4.7
+npm 版本：0.5.1
