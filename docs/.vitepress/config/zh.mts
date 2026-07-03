@@ -69,6 +69,7 @@ function sidebarUser(): DefaultTheme.SidebarItem[] {
       text: '自助服务',
       items: [
         { text: '砸砸乐更新', link: 'bonk-update'},
+        { text: '全蚊公敌更新', link: 'annoyingpet-update'},
       ]
     },
   ]

@@ -1,5 +1,5 @@
 <template>
-  <div class="bonk-updater">
+  <div class="widget-updater">
     <!-- Step 1: Upload -->
     <div v-if="step === 'upload'" class="step-upload">
       <div class="upload-zone" :class="{ dragging }" @click="triggerUpload" @dragover.prevent="dragging = true" @dragleave="dragging = false" @drop.prevent="handleDrop">
@@ -10,8 +10,8 @@
             <line x1="12" y1="3" x2="12" y2="15" />
           </svg>
         </div>
-        <p class="upload-title">点击或拖拽上传你的砸砸乐 .ds 文件</p>
-        <p class="upload-hint">用于验证你已购买砸砸乐</p>
+        <p class="upload-title">点击或拖拽上传你的{{ config.label }} .ds 文件</p>
+        <p class="upload-hint">用于验证你已购买{{ config.label }}</p>
       </div>
       <input ref="fileInput" type="file" accept=".ds" style="display: none" @change="handleFileSelect" />
     </div>
@@ -41,14 +41,14 @@
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
-          {{ latestInfo ? `下载最新版砸砸乐 (ver${latestInfo.version})` : fetchFailed ? '获取版本信息失败' : '获取版本信息中...' }}
+          {{ latestInfo ? `下载最新版${config.label} (ver${latestInfo.version})` : fetchFailed ? '获取版本信息失败' : '获取版本信息中...' }}
         </button>
         <a v-if="fetchFailed" class="retry-link" @click="fetchLatestInfo">重新获取</a>
         <button class="reset-btn" @click="reset">重新验证</button>
       </div>
     </div>
 
-    <!-- Step 3: Fail -->
+    <!-- Step 4: Fail -->
     <div v-if="step === 'fail'" class="step-fail">
       <div class="fail-icon">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -65,11 +65,44 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import JSZip from 'jszip'
 
-type Step = 'upload' | 'verifying' | 'success' | 'fail'
+interface WidgetConfig {
+  label: string
+  validBases: string[]
+  updateJsonUrl: string
+  fallbackFilename: string
+}
+
+const WIDGETS: Record<string, WidgetConfig> = {
+  bonk: {
+    label: '砸砸乐',
+    validBases: ['/dimsum-bonk-2024-widget/', '/douyin-bonk-2024-widget/'],
+    updateJsonUrl: 'https://dimsum-update.miego.live/widgets/dimsum-bonk-2024-widget/update.json',
+    fallbackFilename: '礼物砸砸乐.ds',
+  },
+  annoyingpet: {
+    label: '全蚊公敌',
+    validBases: ['/dimsum-annoyingpet-2026-widget/'],
+    updateJsonUrl: 'https://dimsum-update.miego.live/widgets/dimsum-annoyingpet-2026-widget/update.json',
+    fallbackFilename: '全蚊公敌.ds',
+  },
+}
+
+const props = defineProps<{
+  widgetSlug: string
+}>()
+
 interface LatestInfo { version: string; downloadUrl: string }
+
+type Step = 'upload' | 'verifying' | 'success' | 'fail'
+
+const config = computed<WidgetConfig>(() => {
+  const c = WIDGETS[props.widgetSlug]
+  if (!c) throw new Error(`Unknown widget slug: ${props.widgetSlug}`)
+  return c
+})
 
 const step = ref<Step>('upload')
 const dragging = ref(false)
@@ -81,15 +114,8 @@ const failReason = ref('')
 const latestInfo = ref<LatestInfo | null>(null)
 const fetchFailed = ref(false)
 
-// Timeout + retry constants
-const FETCH_TIMEOUT = 10000 // 10s
-const MAX_RETRIES = 2 // 3 attempts total
-
-// Known identifiers for bonk widget across all versions
-const BONK_NAMES = ['礼物砸砸乐', '抖音礼物砸脸']
-const BONK_BASES = ['/dimsum-bonk-2024-widget/', '/douyin-bonk-2024-widget/']
-
-const UPDATE_JSON_URL = 'https://dimsum-update.miego.live/widgets/dimsum-bonk-2024-widget/update.json'
+const FETCH_TIMEOUT = 10_000
+const MAX_RETRIES = 2
 
 async function fetchLatestInfo() {
   fetchFailed.value = false
@@ -97,7 +123,7 @@ async function fetchLatestInfo() {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT)
     try {
-      const r = await fetch(UPDATE_JSON_URL, { signal: controller.signal })
+      const r = await fetch(config.value.updateJsonUrl, { signal: controller.signal })
       const data = await r.json()
       latestInfo.value = { version: data.version, downloadUrl: data.downloadUrl }
       return
@@ -155,11 +181,9 @@ async function processFile(file: File) {
     const base: string = guide.base || ''
     const version: string = guide.version || ''
 
-    const isBonk = BONK_NAMES.includes(name) || BONK_BASES.includes(base)
-
-    if (!isBonk) {
+    if (!config.value.validBases.includes(base)) {
       step.value = 'fail'
-      failReason.value = `该文件是「${name}」，不是砸砸乐应用。本页面仅提供砸砸乐的更新服务。`
+      failReason.value = `该文件是「${name}」，不是${config.value.label}应用。本页面仅提供${config.value.label}的更新服务。`
       return
     }
 
@@ -176,7 +200,7 @@ async function processFile(file: File) {
 function handleDownload() {
   if (!latestInfo.value) return
   const url = latestInfo.value.downloadUrl
-  const filename = url.split('/').pop() || '礼物砸砸乐.ds'
+  const filename = url.split('/').pop() || config.value.fallbackFilename
   const a = document.createElement('a')
   a.href = url
   a.download = filename
@@ -199,7 +223,7 @@ function reset() {
 </script>
 
 <style scoped>
-.bonk-updater {
+.widget-updater {
   max-width: 520px;
   margin: 2rem auto;
   font-family: var(--vp-font-family-base);
@@ -341,7 +365,7 @@ function reset() {
   line-height: 1.6;
 }
 
-/* Reset Button */
+/* Buttons */
 .reset-btn {
   display: inline-flex;
   align-items: center;

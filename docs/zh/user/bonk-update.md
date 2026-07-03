@@ -6,7 +6,7 @@ title: 砸砸乐自助更新
 
 上传你已有的砸砸乐 `.ds` 文件，验证通过后即可下载最新版本。
 
-<BonkUpdater />
+<WidgetUpdater widget-slug="bonk" />
 
 
 ## 使用说明

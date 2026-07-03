@@ -5,7 +5,7 @@ import * as directives from 'vuetify/directives'
 import { createVuetify } from 'vuetify'
 import '@mdi/font/css/materialdesignicons.css'
 import './index.css'
-import BonkUpdater from './components/BonkUpdater.vue'
+import WidgetUpdater from './components/WidgetUpdater.vue'
 
 const vuetify = createVuetify({
   components,
@@ -19,6 +19,6 @@ export default {
   ...DefaultTheme,
   enhanceApp({ app }) {
     app.use(vuetify)
-    app.component('BonkUpdater', BonkUpdater)
+    app.component('WidgetUpdater', WidgetUpdater)
   },
 }
