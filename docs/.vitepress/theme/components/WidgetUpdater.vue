@@ -88,6 +88,12 @@ const WIDGETS: Record<string, WidgetConfig> = {
     updateJsonUrl: 'https://dimsum-update.miego.live/widgets/dimsum-annoyingpet-2026-widget/update.json',
     fallbackFilename: '全蚊公敌.ds',
   },
+  boss: {
+    label: '点心英雄谭',
+    validBases: ['/dimsum-boss-2026-widget/'],
+    updateJsonUrl: 'https://dimsum-update.miego.live/widgets/dimsum-boss-2026-widget/update.json',
+    fallbackFilename: '点心英雄谭.ds',
+  },
 }
 
 const props = defineProps<{

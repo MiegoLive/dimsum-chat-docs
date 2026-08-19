@@ -70,6 +70,7 @@ function sidebarUser(): DefaultTheme.SidebarItem[] {
       items: [
         { text: '砸砸乐更新', link: 'bonk-update'},
         { text: '全蚊公敌更新', link: 'annoyingpet-update'},
+        { text: '点心英雄谭更新', link: 'boss-update'},
         { text: '常用工具安装', link: 'widget-install'},
       ]
     },
