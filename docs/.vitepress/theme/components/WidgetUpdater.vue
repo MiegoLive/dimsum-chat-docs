@@ -94,6 +94,12 @@ const WIDGETS: Record<string, WidgetConfig> = {
     updateJsonUrl: 'https://dimsum-update.miego.live/widgets/dimsum-boss-2026-widget/update.json',
     fallbackFilename: '点心英雄谭.ds',
   },
+  leaf: {
+    label: '捡叶升级',
+    validBases: ['/dimsum-leaf-2026-widget/'],
+    updateJsonUrl: 'https://dimsum-update.miego.live/widgets/dimsum-leaf-2026-widget/update.json',
+    fallbackFilename: '捡叶升级.ds',
+  },
 }
 
 const props = defineProps<{
