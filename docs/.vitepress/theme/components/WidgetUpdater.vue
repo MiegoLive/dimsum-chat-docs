@@ -100,6 +100,12 @@ const WIDGETS: Record<string, WidgetConfig> = {
     updateJsonUrl: 'https://dimsum-update.miego.live/widgets/dimsum-leaf-2026-widget/update.json',
     fallbackFilename: '捡叶升级.ds',
   },
+  tape: {
+    label: '撕胶带',
+    validBases: ['/dimsum-tape-2026-widget/'],
+    updateJsonUrl: 'https://dimsum-update.miego.live/widgets/dimsum-tape-2026-widget/update.json',
+    fallbackFilename: '撕胶带.ds',
+  },
 }
 
 const props = defineProps<{
