@@ -96,6 +96,7 @@ switch (message.type) {
 - 抖音 (`douyin`)
 - 快手 (`kuaishou`)
 - CHZZK (`chzzk`)
+- 小红书 (`xiaohongshu`)
 - 抖音代理 (`douyin`)
 
 **消息示例**:
@@ -111,7 +112,7 @@ switch (message.type) {
 **字段说明**:
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| platform | string | 平台标识：`douyin`、`kuaishou`、`chzzk` |
+| platform | string | 平台标识：`douyin`、`kuaishou`、`chzzk`、`xiaohongshu` |
 | roomId | string | 直播间 ID |
 
 ### 3. 播放器时间戳 (`DimSumChatPlayerTick`)

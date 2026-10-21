@@ -77,7 +77,7 @@
 
 消息所属直播平台。
 
-- **类型** `'acfun' | 'openblive' | 'bilibili' | 'douyin' | 'kuaishou' | 'chzzk' | undefined`
+- **类型** `'acfun' | 'openblive' | 'bilibili' | 'douyin' | 'kuaishou' | 'chzzk' | 'xiaohongshu' | undefined`
 
 - **支持平台** 全平台
 
@@ -138,7 +138,7 @@ const avatar = parser.platform === 'bilibili' && parser.uid
 
 - **类型** `string | undefined`
 
-- **支持平台** bilibili、openblive、acfun、douyin、kuaishou
+- **支持平台** bilibili、openblive、acfun、douyin、kuaishou、xiaohongshu
 
 ---
 
@@ -381,7 +381,7 @@ Chzzk 订阅月数。
 
 - **类型** `string | undefined`
 
-- **支持平台** acfun、bilibili、openblive、douyin、kuaishou（仅在 `type=gift` 时有值）
+- **支持平台** acfun、bilibili、openblive、douyin、kuaishou、xiaohongshu（仅在 `type=gift` 时有值）
 
 ---
 
@@ -391,7 +391,7 @@ Chzzk 订阅月数。
 
 - **类型** `number | undefined`
 
-- **支持平台** acfun、bilibili、openblive、douyin、kuaishou（仅在 `type=gift` 时有值）
+- **支持平台** acfun、bilibili、openblive、douyin、kuaishou、xiaohongshu（仅在 `type=gift` 时有值）
 
 ---
 
@@ -401,7 +401,7 @@ Chzzk 订阅月数。
 
 - **类型** `number | undefined`
 
-- **支持平台** acfun、bilibili、openblive、douyin、kuaishou（仅在 `type=gift` 时有值）
+- **支持平台** acfun、bilibili、openblive、douyin、kuaishou、xiaohongshu（仅在 `type=gift` 时有值）
 
 ---
 
@@ -421,7 +421,7 @@ Chzzk 订阅月数。
 
 - **类型** `string | undefined`
 
-- **支持平台** acfun、bilibili、openblive、douyin、kuaishou（仅在 `type=gift` 时有值）
+- **支持平台** acfun、bilibili、openblive、douyin、kuaishou、xiaohongshu（仅在 `type=gift` 时有值）
 
 ---
 

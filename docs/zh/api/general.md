@@ -86,6 +86,16 @@
   你应该使用[消息解析器](./parser)处理大多数情况，对于某些消息解析器未提供的接口，再通过原始消息结构进行数据解析。
   :::
 
+  对于小红书 `xiaohongshu` 消息，支持以下类型：
+
+  ```
+  xiaohongshu.text
+  xiaohongshu.gift_dock_and_effect
+  xiaohongshu.praise
+  xiaohongshu.audience_join_v2
+  xiaohongshu.follow_emcee
+  ```
+
 ## 加载哔哩哔哩头像 {#bface}
 
 在登录哔哩哔哩账号的前提下，获取用户头像的图像二进制数据。
